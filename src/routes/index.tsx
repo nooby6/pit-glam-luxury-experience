@@ -1,26 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
+import PitGlam from "@/components/PitGlam";
 
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Pit Glam · Premium Brows & Lashes Studio in Nairobi" },
+      { name: "description", content: "Nairobi's boutique brows and lashes atelier. Lash extensions, brow lamination, bridal beauty and more in Westlands. Book your private ritual today." },
+      { property: "og:title", content: "Pit Glam · Because your Brows & Lashes Matter" },
+      { property: "og:description", content: "Luxury brows and lashes studio in Westlands, Nairobi. Certified artists, premium products, unforgettable results." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "/" },
+    ],
+    links: [{ rel: "canonical", href: "/" }],
+  }),
+  component: PitGlam,
 });
-
-// IMPORTANT: Replace this placeholder. For sites with multiple pages (About, Services, Contact, etc.),
-// create separate route files (about.tsx, services.tsx, contact.tsx) — don't put all pages in this file.
-function PlaceholderIndex() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
-
-function Index() {
-  return <PlaceholderIndex />;
-}
