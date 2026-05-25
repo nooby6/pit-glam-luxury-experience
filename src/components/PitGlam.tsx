@@ -15,11 +15,11 @@ import {
 import { toast } from "sonner";
 
 import hero from "@/assets/hero-brows.jpg";
-import portrait from "@/assets/about-portrait.jpg";
-import imgLashes from "@/assets/service-lashes.jpg";
-import imgBrows from "@/assets/service-brows.jpg";
-import imgBridal from "@/assets/service-bridal.jpg";
-import imgStudio from "@/assets/studio.jpg";
+import portrait from "@/assets/real-brows-lashes.png";
+import imgLashes from "@/assets/real-lash-mirror.png";
+import imgBrows from "@/assets/real-brows-lashes.png";
+import imgBridal from "@/assets/real-lash-closeup.png";
+import imgStudio from "@/assets/real-lash-mirror.png";
 
 const WHATSAPP = "https://wa.me/254700000000?text=Hi%20Pit%20Glam%2C%20I'd%20like%20to%20book%20an%20appointment.";
 
