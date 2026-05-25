@@ -21,7 +21,7 @@ import imgBrows from "@/assets/real-brows-lashes.png";
 import imgBridal from "@/assets/real-lash-closeup.png";
 import imgStudio from "@/assets/real-lash-mirror.png";
 
-const WHATSAPP = "https://wa.me/254700000000?text=Hi%20Pit%20Glam%2C%20I'd%20like%20to%20book%20an%20appointment.";
+const WHATSAPP = "https://wa.me/254722351276";
 
 const nav = [
   { label: "About", href: "#about" },
@@ -598,10 +598,22 @@ function Booking() {
   const r = useReveal();
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    toast.success("Booking request received", {
-      description: "We'll confirm your appointment on WhatsApp within minutes.",
+    const form = e.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
+    const name = (data.get("name") ?? "").toString();
+    const phone = (data.get("phone") ?? "").toString();
+    const email = (data.get("email") ?? "").toString();
+    const service = (data.get("service") ?? (form.querySelector('[name="service"]') as HTMLInputElement | null)?.value ?? "").toString();
+    const date = (data.get("date") ?? "").toString();
+    const time = (data.get("time") ?? "").toString();
+    const notes = (data.get("notes") ?? "").toString();
+    const message = `Hi Pit Glam, I'd like to book an appointment.\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\nService: ${service}\nDate: ${date}\nTime: ${time}\nNotes: ${notes}`;
+    const url = `https://wa.me/254722351276?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+    toast.success("Booking request opened in WhatsApp", {
+      description: "You'll be redirected to WhatsApp to complete your request.",
     });
-    (e.currentTarget as HTMLFormElement).reset();
+    form.reset();
   }
   return (
     <section id="book" className="py-28 md:py-40 bg-secondary/40">
@@ -624,12 +636,12 @@ function Booking() {
                 <p className="text-sm text-muted-foreground">Instant replies · 9am–8pm</p>
               </div>
             </a>
-            <a href="tel:+254700000000" className="flex items-center gap-4 glass rounded-2xl p-5 hover:shadow-soft transition-all">
+            <a href="tel:+254722351276" className="flex items-center gap-4 glass rounded-2xl p-5 hover:shadow-soft transition-all">
               <div className="h-12 w-12 rounded-full bg-foreground text-background grid place-items-center">
                 <Phone className="h-5 w-5" />
               </div>
               <div>
-                <p className="font-medium">+254 700 000 000</p>
+                <p className="font-medium">+254 722 351276</p>
                 <p className="text-sm text-muted-foreground">Call the studio directly</p>
               </div>
             </a>
@@ -838,7 +850,7 @@ function Footer() {
             <ul className="space-y-2 text-background/80">
               <li>Waiyaki Way, Westlands</li>
               <li>Nairobi, Kenya</li>
-              <li>+254 700 000 000</li>
+              <li>+254 722 351276</li>
               <li className="flex gap-3 pt-2">
                 <a href="https://instagram.com" aria-label="Instagram" className="h-9 w-9 grid place-items-center rounded-full bg-background/10 hover:bg-accent hover:text-foreground transition-colors"><Instagram className="h-4 w-4" /></a>
                 <a href={WHATSAPP} aria-label="WhatsApp" className="h-9 w-9 grid place-items-center rounded-full bg-background/10 hover:bg-accent hover:text-foreground transition-colors"><MessageCircle className="h-4 w-4" /></a>
