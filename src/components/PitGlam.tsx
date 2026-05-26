@@ -512,7 +512,7 @@ function BeforeAfter() {
               transition={{ duration: 0.6, delay: (i % 4) * 0.06 }}
               className={`overflow-hidden rounded-2xl shadow-soft ${i % 3 === 0 ? "row-span-2 aspect-[3/4]" : "aspect-square"}`}
             >
-              <img src={item.src} alt={item.alt} loading="lazy" className="h-full w-full object-cover hover:scale-110 transition-transform duration-1000" />
+              <img src={item.src.src} srcSet={item.src.srcSet} sizes={cardSizes} alt={item.alt} loading="lazy" decoding="async" width={item.src.width} height={item.src.height} className="h-full w-full object-cover hover:scale-110 transition-transform duration-1000" />
             </motion.div>
           ))}
         </div>
