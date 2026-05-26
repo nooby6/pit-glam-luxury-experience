@@ -490,7 +490,16 @@ function BeforeAfter() {
 
         {/* Masonry */}
         <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[imgLashes, imgBrows, imgBridal, imgStudio, imgBrows, imgLashes, imgBridal, imgStudio].map((src, i) => (
+          {[
+            { src: imgLashes, alt: "Classic lash extensions reflecting in a vanity mirror" },
+            { src: imgBrows, alt: "Freshly shaped and tinted brows framing the eyes" },
+            { src: imgBridal, alt: "Close-up of soft bridal volume lashes for a wedding look" },
+            { src: imgStudio, alt: "Lash technician workspace with mirror and premium tools" },
+            { src: imgBrows, alt: "Detailed brow mapping showing symmetrical arch design" },
+            { src: imgLashes, alt: "Hybrid lash set creating a textured, wide-awake gaze" },
+            { src: imgBridal, alt: "Bridal lash close-up — romantic, feathered volume" },
+            { src: imgStudio, alt: "Client viewing her lash transformation in the studio mirror" },
+          ].map((item, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 30 }}
@@ -499,7 +508,7 @@ function BeforeAfter() {
               transition={{ duration: 0.6, delay: (i % 4) * 0.06 }}
               className={`overflow-hidden rounded-2xl shadow-soft ${i % 3 === 0 ? "row-span-2 aspect-[3/4]" : "aspect-square"}`}
             >
-              <img src={src} alt="" loading="lazy" className="h-full w-full object-cover hover:scale-110 transition-transform duration-1000" />
+              <img src={item.src} alt={item.alt} loading="lazy" className="h-full w-full object-cover hover:scale-110 transition-transform duration-1000" />
             </motion.div>
           ))}
         </div>
