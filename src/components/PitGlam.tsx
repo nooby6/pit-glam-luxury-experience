@@ -464,9 +464,9 @@ function BeforeAfter() {
 
         <motion.div {...r} className="relative mx-auto max-w-4xl rounded-3xl overflow-hidden shadow-luxe select-none">
           <div className="relative aspect-[16/10]">
-            <img src={imgBrows} alt="Before: natural brows and lashes before any treatment" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+            <img src={imgBrows.src} srcSet={imgBrows.srcSet} sizes="(min-width: 768px) 800px, 100vw" alt="Before: natural brows and lashes before any treatment" width={imgBrows.width} height={imgBrows.height} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
             <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-              <img src={imgLashes} alt="After: lush lashes and defined brows following Pit Glam treatments" className="h-full w-full object-cover" loading="lazy" />
+              <img src={imgLashes.src} srcSet={imgLashes.srcSet} sizes="(min-width: 768px) 800px, 100vw" alt="After: lush lashes and defined brows following Pit Glam treatments" width={imgLashes.width} height={imgLashes.height} className="h-full w-full object-cover" loading="lazy" decoding="async" />
             </div>
             <div
               className="absolute top-0 bottom-0 w-0.5 bg-accent shadow-gold"
