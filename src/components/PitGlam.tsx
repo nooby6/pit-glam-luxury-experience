@@ -407,11 +407,14 @@ function Services() {
             >
               <div className="aspect-[4/3] overflow-hidden relative">
                 <img
-                  src={s.img}
+                  src={s.img.src}
+                  srcSet={s.img.srcSet}
+                  sizes={cardSizes}
                   alt={s.alt}
                   loading="lazy"
-                  width={1024}
-                  height={768}
+                  decoding="async"
+                  width={s.img.width}
+                  height={s.img.height}
                   className="h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-110"
                 />
                 <span className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-5 py-4 text-xs text-white/90 hairline opacity-0 group-hover:opacity-100 transition-opacity duration-500">
