@@ -15,11 +15,12 @@ import {
 import { toast } from "sonner";
 
 import hero from "@/assets/hero-brows.jpg";
-import portrait from "@/assets/real-brows-lashes.png";
-import imgLashes from "@/assets/real-lash-mirror.png";
-import imgBrows from "@/assets/real-brows-lashes.png";
-import imgBridal from "@/assets/real-lash-closeup.png";
-import imgStudio from "@/assets/real-lash-mirror.png";
+import { browsImg, mirrorImg, closeupImg, cardSizes } from "./pit-glam-images";
+const portrait = browsImg;
+const imgLashes = mirrorImg;
+const imgBrows = browsImg;
+const imgBridal = closeupImg;
+const imgStudio = mirrorImg;
 
 const WHATSAPP = "https://wa.me/254722351276";
 
@@ -328,7 +329,7 @@ function About() {
         <motion.div {...r} className="relative">
           <div className="absolute -inset-6 bg-gradient-luxe rounded-[2.5rem] -z-10 blur-2xl opacity-60" />
           <div className="overflow-hidden rounded-[2rem] shadow-luxe">
-            <img src={portrait} alt="Pit Glam founder portrait" loading="lazy" width={1024} height={1280} className="h-[640px] w-full object-cover" />
+            <img src={portrait.src} srcSet={portrait.srcSet} sizes="(min-width: 1024px) 50vw, 100vw" alt="Pit Glam founder portrait" loading="lazy" decoding="async" width={portrait.width} height={portrait.height} className="h-[640px] w-full object-cover" />
           </div>
           <div className="absolute -bottom-8 -right-4 md:-right-10 glass rounded-2xl p-5 shadow-luxe max-w-[240px]">
             <div className="flex items-center gap-3">
@@ -406,11 +407,14 @@ function Services() {
             >
               <div className="aspect-[4/3] overflow-hidden relative">
                 <img
-                  src={s.img}
+                  src={s.img.src}
+                  srcSet={s.img.srcSet}
+                  sizes={cardSizes}
                   alt={s.alt}
                   loading="lazy"
-                  width={1024}
-                  height={768}
+                  decoding="async"
+                  width={s.img.width}
+                  height={s.img.height}
                   className="h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-110"
                 />
                 <span className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-5 py-4 text-xs text-white/90 hairline opacity-0 group-hover:opacity-100 transition-opacity duration-500">
@@ -460,9 +464,9 @@ function BeforeAfter() {
 
         <motion.div {...r} className="relative mx-auto max-w-4xl rounded-3xl overflow-hidden shadow-luxe select-none">
           <div className="relative aspect-[16/10]">
-            <img src={imgBrows} alt="Before: natural brows and lashes before any treatment" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+            <img src={imgBrows.src} srcSet={imgBrows.srcSet} sizes="(min-width: 768px) 800px, 100vw" alt="Before: natural brows and lashes before any treatment" width={imgBrows.width} height={imgBrows.height} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
             <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-              <img src={imgLashes} alt="After: lush lashes and defined brows following Pit Glam treatments" className="h-full w-full object-cover" loading="lazy" />
+              <img src={imgLashes.src} srcSet={imgLashes.srcSet} sizes="(min-width: 768px) 800px, 100vw" alt="After: lush lashes and defined brows following Pit Glam treatments" width={imgLashes.width} height={imgLashes.height} className="h-full w-full object-cover" loading="lazy" decoding="async" />
             </div>
             <div
               className="absolute top-0 bottom-0 w-0.5 bg-accent shadow-gold"
@@ -508,7 +512,7 @@ function BeforeAfter() {
               transition={{ duration: 0.6, delay: (i % 4) * 0.06 }}
               className={`overflow-hidden rounded-2xl shadow-soft ${i % 3 === 0 ? "row-span-2 aspect-[3/4]" : "aspect-square"}`}
             >
-              <img src={item.src} alt={item.alt} loading="lazy" className="h-full w-full object-cover hover:scale-110 transition-transform duration-1000" />
+              <img src={item.src.src} srcSet={item.src.srcSet} sizes={cardSizes} alt={item.alt} loading="lazy" decoding="async" width={item.src.width} height={item.src.height} className="h-full w-full object-cover hover:scale-110 transition-transform duration-1000" />
             </motion.div>
           ))}
         </div>
@@ -748,7 +752,7 @@ function Social() {
               transition={{ duration: 0.5, delay: i * 0.05 }}
               className="relative aspect-square overflow-hidden rounded-2xl group"
             >
-              <img src={src} alt="" loading="lazy" className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" />
+              <img src={src.src} srcSet={src.srcSet} sizes="(min-width: 1024px) 25vw, 50vw" alt="" loading="lazy" decoding="async" width={src.width} height={src.height} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" />
               <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/40 transition-colors grid place-items-center opacity-0 group-hover:opacity-100">
                 <Instagram className="h-6 w-6 text-background" />
               </div>
