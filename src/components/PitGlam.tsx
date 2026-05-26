@@ -404,15 +404,18 @@ function Services() {
               transition={{ duration: 0.6, delay: (i % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
               className="group relative overflow-hidden rounded-3xl bg-card shadow-soft hover:shadow-luxe transition-all duration-500"
             >
-              <div className="aspect-[4/3] overflow-hidden">
+              <div className="aspect-[4/3] overflow-hidden relative">
                 <img
                   src={s.img}
-                  alt={s.name}
+                  alt={s.alt}
                   loading="lazy"
                   width={1024}
                   height={768}
                   className="h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-110"
                 />
+                <span className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-5 py-4 text-xs text-white/90 hairline opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  {s.caption}
+                </span>
               </div>
               <div className="p-7">
                 <div className="flex items-start justify-between gap-3 mb-3">
@@ -457,9 +460,9 @@ function BeforeAfter() {
 
         <motion.div {...r} className="relative mx-auto max-w-4xl rounded-3xl overflow-hidden shadow-luxe select-none">
           <div className="relative aspect-[16/10]">
-            <img src={imgBrows} alt="Before treatment" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+            <img src={imgBrows} alt="Before: natural brows and lashes before any treatment" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
             <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-              <img src={imgLashes} alt="After treatment" className="h-full w-full object-cover" loading="lazy" />
+              <img src={imgLashes} alt="After: lush lashes and defined brows following Pit Glam treatments" className="h-full w-full object-cover" loading="lazy" />
             </div>
             <div
               className="absolute top-0 bottom-0 w-0.5 bg-accent shadow-gold"
@@ -480,6 +483,9 @@ function BeforeAfter() {
             <span className="absolute top-4 left-4 hairline bg-background/80 backdrop-blur px-3 py-1.5 rounded-full">Before</span>
             <span className="absolute top-4 right-4 hairline bg-foreground text-background px-3 py-1.5 rounded-full">After</span>
           </div>
+          <p className="text-center text-sm text-muted-foreground mt-4 hairline">
+            Drag the slider to reveal the transformation — natural state to fully styled brows & lashes
+          </p>
         </motion.div>
 
         {/* Masonry */}
