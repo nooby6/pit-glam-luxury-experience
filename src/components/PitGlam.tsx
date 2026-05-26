@@ -15,7 +15,7 @@ import {
 import { toast } from "sonner";
 
 import hero from "@/assets/hero-brows.jpg";
-import { browsImg, mirrorImg, closeupImg, cardSizes, heroSizes } from "./pit-glam-images";
+import { browsImg, mirrorImg, closeupImg, cardSizes } from "./pit-glam-images";
 const portrait = browsImg;
 const imgLashes = mirrorImg;
 const imgBrows = browsImg;
