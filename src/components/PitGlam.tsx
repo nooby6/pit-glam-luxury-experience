@@ -32,15 +32,15 @@ const nav = [
 ];
 
 const services = [
-  { name: "Eyebrow Shaping", desc: "Precision wax & tweeze tailored to your facial architecture.", price: "KSh 1,200", time: "30 min", img: imgBrows },
-  { name: "Brow Lamination", desc: "Fluffy, fashion-forward brows that stay set for weeks.", price: "KSh 3,500", time: "45 min", img: imgBrows },
-  { name: "Brow Tinting", desc: "Custom-blended tint for richer, defined arches.", price: "KSh 1,500", time: "25 min", img: imgBrows },
-  { name: "Classic Lash Extensions", desc: "One-to-one application for a soft mascara finish.", price: "KSh 3,000", time: "90 min", img: imgLashes },
-  { name: "Hybrid Lash Extensions", desc: "A textured mix of classic and volume — effortless drama.", price: "KSh 4,500", time: "120 min", img: imgLashes },
-  { name: "Volume Lash Extensions", desc: "Hand-crafted fans for full, fluttery intensity.", price: "KSh 6,000", time: "150 min", img: imgLashes },
-  { name: "Lash Lift", desc: "Natural-lash curl that opens the eye for up to 8 weeks.", price: "KSh 3,500", time: "60 min", img: imgLashes },
-  { name: "Lash Tint", desc: "Deep, glossy pigment for a wide-awake gaze.", price: "KSh 1,200", time: "25 min", img: imgLashes },
-  { name: "Bridal Beauty Package", desc: "Lashes, brows & a glow trial for your big day.", price: "KSh 12,000", time: "Custom", img: imgBridal },
+  { name: "Eyebrow Shaping", desc: "Precision wax & tweeze tailored to your facial architecture.", price: "KSh 1,200", time: "30 min", img: imgBrows, alt: "Client showing freshly sculpted brows with clean, defined arches", caption: "Brow mapping & shaping — tailored to your bone structure" },
+  { name: "Brow Lamination", desc: "Fluffy, fashion-forward brows that stay set for weeks.", price: "KSh 3,500", time: "45 min", img: imgBrows, alt: "Close-up of laminated brows brushed upward for a full, fluffy finish", caption: "Lamination creates a feathered, editorial brow look" },
+  { name: "Brow Tinting", desc: "Custom-blended tint for richer, defined arches.", price: "KSh 1,500", time: "25 min", img: imgBrows, alt: "Richly tinted brows framing the eyes with deep, even pigment", caption: "Custom-blended tint matched to your hair & skin tone" },
+  { name: "Classic Lash Extensions", desc: "One-to-one application for a soft mascara finish.", price: "KSh 3,000", time: "90 min", img: imgLashes, alt: "Client admiring classic lash extensions in a hand mirror", caption: "Classic 1:1 extensions — natural length with a soft curl" },
+  { name: "Hybrid Lash Extensions", desc: "A textured mix of classic and volume — effortless drama.", price: "KSh 4,500", time: "120 min", img: imgLashes, alt: "Hybrid lash set blending classic singles and volume fans", caption: "Hybrid texture — the perfect balance of natural & bold" },
+  { name: "Volume Lash Extensions", desc: "Hand-crafted fans for full, fluttery intensity.", price: "KSh 6,000", time: "150 min", img: imgLashes, alt: "Full volume lash fans creating a dramatic, wide-awake gaze", caption: "Russian-volume fans — up to 600 ultra-fine lashes per eye" },
+  { name: "Lash Lift", desc: "Natural-lash curl that opens the eye for up to 8 weeks.", price: "KSh 3,500", time: "60 min", img: imgLashes, alt: "Lifted natural lashes curled upward, opening the eye shape", caption: "Lash lift & tint — your own lashes, beautifully curled" },
+  { name: "Lash Tint", desc: "Deep, glossy pigment for a wide-awake gaze.", price: "KSh 1,200", time: "25 min", img: imgLashes, alt: "Deeply tinted lashes catching light with a glossy black finish", caption: "Semi-permanent tint — no mascara needed for weeks" },
+  { name: "Bridal Beauty Package", desc: "Lashes, brows & a glow trial for your big day.", price: "KSh 12,000", time: "Custom", img: imgBridal, alt: "Bridal lash close-up — soft, romantic volume for the wedding day", caption: "Bridal trial included — walk down the aisle with confidence" },
 ];
 
 const features = [
@@ -404,15 +404,18 @@ function Services() {
               transition={{ duration: 0.6, delay: (i % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
               className="group relative overflow-hidden rounded-3xl bg-card shadow-soft hover:shadow-luxe transition-all duration-500"
             >
-              <div className="aspect-[4/3] overflow-hidden">
+              <div className="aspect-[4/3] overflow-hidden relative">
                 <img
                   src={s.img}
-                  alt={s.name}
+                  alt={s.alt}
                   loading="lazy"
                   width={1024}
                   height={768}
                   className="h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-110"
                 />
+                <span className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-5 py-4 text-xs text-white/90 hairline opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  {s.caption}
+                </span>
               </div>
               <div className="p-7">
                 <div className="flex items-start justify-between gap-3 mb-3">
@@ -457,9 +460,9 @@ function BeforeAfter() {
 
         <motion.div {...r} className="relative mx-auto max-w-4xl rounded-3xl overflow-hidden shadow-luxe select-none">
           <div className="relative aspect-[16/10]">
-            <img src={imgBrows} alt="Before treatment" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+            <img src={imgBrows} alt="Before: natural brows and lashes before any treatment" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
             <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-              <img src={imgLashes} alt="After treatment" className="h-full w-full object-cover" loading="lazy" />
+              <img src={imgLashes} alt="After: lush lashes and defined brows following Pit Glam treatments" className="h-full w-full object-cover" loading="lazy" />
             </div>
             <div
               className="absolute top-0 bottom-0 w-0.5 bg-accent shadow-gold"
@@ -480,11 +483,23 @@ function BeforeAfter() {
             <span className="absolute top-4 left-4 hairline bg-background/80 backdrop-blur px-3 py-1.5 rounded-full">Before</span>
             <span className="absolute top-4 right-4 hairline bg-foreground text-background px-3 py-1.5 rounded-full">After</span>
           </div>
+          <p className="text-center text-sm text-muted-foreground mt-4 hairline">
+            Drag the slider to reveal the transformation — natural state to fully styled brows & lashes
+          </p>
         </motion.div>
 
         {/* Masonry */}
         <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[imgLashes, imgBrows, imgBridal, imgStudio, imgBrows, imgLashes, imgBridal, imgStudio].map((src, i) => (
+          {[
+            { src: imgLashes, alt: "Classic lash extensions reflecting in a vanity mirror" },
+            { src: imgBrows, alt: "Freshly shaped and tinted brows framing the eyes" },
+            { src: imgBridal, alt: "Close-up of soft bridal volume lashes for a wedding look" },
+            { src: imgStudio, alt: "Lash technician workspace with mirror and premium tools" },
+            { src: imgBrows, alt: "Detailed brow mapping showing symmetrical arch design" },
+            { src: imgLashes, alt: "Hybrid lash set creating a textured, wide-awake gaze" },
+            { src: imgBridal, alt: "Bridal lash close-up — romantic, feathered volume" },
+            { src: imgStudio, alt: "Client viewing her lash transformation in the studio mirror" },
+          ].map((item, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 30 }}
@@ -493,7 +508,7 @@ function BeforeAfter() {
               transition={{ duration: 0.6, delay: (i % 4) * 0.06 }}
               className={`overflow-hidden rounded-2xl shadow-soft ${i % 3 === 0 ? "row-span-2 aspect-[3/4]" : "aspect-square"}`}
             >
-              <img src={src} alt="" loading="lazy" className="h-full w-full object-cover hover:scale-110 transition-transform duration-1000" />
+              <img src={item.src} alt={item.alt} loading="lazy" className="h-full w-full object-cover hover:scale-110 transition-transform duration-1000" />
             </motion.div>
           ))}
         </div>
