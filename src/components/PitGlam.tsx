@@ -329,7 +329,7 @@ function About() {
         <motion.div {...r} className="relative">
           <div className="absolute -inset-6 bg-gradient-luxe rounded-[2.5rem] -z-10 blur-2xl opacity-60" />
           <div className="overflow-hidden rounded-[2rem] shadow-luxe">
-            <img src={portrait} alt="Pit Glam founder portrait" loading="lazy" width={1024} height={1280} className="h-[640px] w-full object-cover" />
+            <img src={portrait.src} srcSet={portrait.srcSet} sizes="(min-width: 1024px) 50vw, 100vw" alt="Pit Glam founder portrait" loading="lazy" decoding="async" width={portrait.width} height={portrait.height} className="h-[640px] w-full object-cover" />
           </div>
           <div className="absolute -bottom-8 -right-4 md:-right-10 glass rounded-2xl p-5 shadow-luxe max-w-[240px]">
             <div className="flex items-center gap-3">
