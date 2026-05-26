@@ -752,7 +752,7 @@ function Social() {
               transition={{ duration: 0.5, delay: i * 0.05 }}
               className="relative aspect-square overflow-hidden rounded-2xl group"
             >
-              <img src={src} alt="" loading="lazy" className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" />
+              <img src={src.src} srcSet={src.srcSet} sizes="(min-width: 1024px) 25vw, 50vw" alt="" loading="lazy" decoding="async" width={src.width} height={src.height} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" />
               <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/40 transition-colors grid place-items-center opacity-0 group-hover:opacity-100">
                 <Instagram className="h-6 w-6 text-background" />
               </div>
