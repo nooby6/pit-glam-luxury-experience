@@ -15,11 +15,12 @@ import {
 import { toast } from "sonner";
 
 import hero from "@/assets/hero-brows.jpg";
-import portrait from "@/assets/real-brows-lashes.png";
-import imgLashes from "@/assets/real-lash-mirror.png";
-import imgBrows from "@/assets/real-brows-lashes.png";
-import imgBridal from "@/assets/real-lash-closeup.png";
-import imgStudio from "@/assets/real-lash-mirror.png";
+import { browsImg, mirrorImg, closeupImg, cardSizes, heroSizes } from "./pit-glam-images";
+const portrait = browsImg;
+const imgLashes = mirrorImg;
+const imgBrows = browsImg;
+const imgBridal = closeupImg;
+const imgStudio = mirrorImg;
 
 const WHATSAPP = "https://wa.me/254722351276";
 
