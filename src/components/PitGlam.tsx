@@ -49,20 +49,20 @@ const features = [
   { icon: ShieldCheck, title: "Hygienic Studio", desc: "Single-use tools & autoclave sterilization." },
   { icon: HeartHandshake, title: "Personalized Maps", desc: "Brow & lash design mapped to your features." },
   { icon: Crown, title: "Long-lasting Results", desc: "Retention up to 6 weeks with proper care." },
-  { icon: MapPin, title: "Westlands, Nairobi", desc: "Boutique studio in the heart of the city." },
+  { icon: MapPin, title: "Valley Arcade, Kilimani", desc: "Boutique studio in the heart of the city." },
 ];
 
 const reviews = [
   { name: "Wanjiru K.", role: "Bride, Karen", quote: "I floated down the aisle. My lashes outlasted the honeymoon — Pit Glam is the only place I trust now." },
   { name: "Amara O.", role: "Content Creator", quote: "The brow mapping changed my face. Every comment on my reels is about my arches now." },
-  { name: "Lulu M.", role: "Lawyer, Westlands", quote: "Clinical-level hygiene with five-star pampering. I leave feeling like the most expensive version of myself." },
+  { name: "Lulu M.", role: "Lawyer, Kilimani", quote: "Clinical-level hygiene with five-star pampering. I leave feeling like the most expensive version of myself." },
   { name: "Zara A.", role: "University Student", quote: "Affordable luxury — I save my pocket money for Pit Glam. Worth every shilling." },
 ];
 
 const faqs = [
   { q: "How long do lash extensions last?", a: "With proper aftercare and a refill every 2–3 weeks, your set will stay full and beautiful indefinitely." },
   { q: "Do you offer bridal trials?", a: "Yes. Every bridal package includes a complimentary trial 2–4 weeks before your wedding date." },
-  { q: "Where are you located?", a: "We're on Waiyaki Way, Westlands, Nairobi — five minutes from Sarit Centre. Free parking on site." },
+  { q: "Where are you located?", a: "We're at Valley Arcade, Kilimani. Free parking on site." },
   { q: "Can I book on WhatsApp?", a: "Absolutely. Tap the floating WhatsApp button anytime and our concierge will confirm within minutes." },
 ];
 
@@ -245,7 +245,7 @@ function Hero() {
             transition={{ duration: 0.6 }}
             className="hairline text-muted-foreground mb-6"
           >
-            Nairobi · Westlands · Est. 2019
+            Nairobi · Kilimani · Est. 2019
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
@@ -350,7 +350,7 @@ function About() {
             <em className="italic text-gradient-gold">finest accessory</em>.
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Born in the heart of Nairobi, Pit Glam was founded on a simple belief: a perfectly sculpted brow and a lifted lash can change the way you walk into a room. From boardrooms in Westlands to weddings on the coast, our artists craft tailored beauty for the women shaping modern Kenya.
+            Born in the heart of Nairobi, Pit Glam was founded on a simple belief: a perfectly sculpted brow and a lifted lash can change the way you walk into a room. From boardrooms in Kilimani to weddings on the coast, our artists craft tailored beauty for the women shaping modern Kenya.
           </p>
           <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
             Every appointment is a private ritual — soft music, warm tea, and time spent making you feel exactly like yourself, only more so.
@@ -754,14 +754,14 @@ function Location() {
         <motion.div {...r}>
           <p className="hairline text-accent mb-4">Visit Us</p>
           <h2 className="font-display text-4xl md:text-6xl leading-[1] mb-8">
-            Find us in <em className="italic text-gradient-gold">Westlands</em>.
+            Find us in <em className="italic text-gradient-gold">Kilimani</em>.
           </h2>
           <div className="space-y-5 text-lg">
             <div className="flex items-start gap-4">
               <MapPin className="h-5 w-5 text-accent mt-1 shrink-0" />
               <div>
-                <p className="font-medium">Waiyaki Way, Westlands</p>
-                <p className="text-muted-foreground text-base">Suite 4B, Eden Square · Nairobi, Kenya</p>
+                <p className="font-medium">Valley Arcade, Kilimani</p>
+                <p className="text-muted-foreground text-base">Valley Arcade · Kilimani, Nairobi, Kenya</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -796,7 +796,7 @@ function Location() {
         <motion.div {...r} className="rounded-3xl overflow-hidden shadow-luxe h-[640px]">
           <iframe
             title="Pit Glam location"
-            src="https://www.google.com/maps?q=Westlands,Nairobi,Kenya&output=embed"
+            src="https://www.google.com/maps?q=Valley+Arcade,Kilimani,Nairobi,Kenya&output=embed"
             width="100%"
             height="100%"
             loading="lazy"
@@ -848,7 +848,7 @@ function Footer() {
           <div>
             <p className="hairline text-background/60 mb-4">Contact</p>
             <ul className="space-y-2 text-background/80">
-              <li>Waiyaki Way, Westlands</li>
+              <li>Valley Arcade, Kilimani</li>
               <li>Nairobi, Kenya</li>
               <li>+254 722 351276</li>
               <li className="flex gap-3 pt-2">
