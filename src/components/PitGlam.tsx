@@ -383,6 +383,18 @@ function About() {
 /* -------- Services -------- */
 function Services() {
   const r = useReveal();
+  const [live, setLive] = useState<Record<string, { price: string; time: string }>>({});
+  useEffect(() => {
+    supabase.from("services").select("name, price_kes, duration_min").eq("active", true).then(({ data }) => {
+      if (!data) return;
+      const map: Record<string, { price: string; time: string }> = {};
+      data.forEach((s: any) => {
+        map[s.name.toLowerCase()] = { price: `KSh ${Number(s.price_kes).toLocaleString()}`, time: `${s.duration_min} min` };
+      });
+      setLive(map);
+    });
+  }, []);
+
   return (
     <section id="services" className="relative py-28 md:py-40 bg-secondary/40">
       <div className="mx-auto max-w-7xl px-5">
