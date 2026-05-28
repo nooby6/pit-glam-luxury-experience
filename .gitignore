@@ -15,7 +15,24 @@ dist-ssr
 .tanstack/**
 .nitro
 *.local
-
+.env
+.env.*.local
+.nuxt
+.nuxt-ts
+.next
+.svelte-kit
+.cache
+build
+coverage
+public/build
+public/dist
+public/assets
+public/static
+public/_nuxt
+public/_next
+public/.svelte-kit
+public/.nuxt
+public/.next
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
