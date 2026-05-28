@@ -149,6 +149,7 @@ function Nav() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            <Link to="/login" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground mr-2">Staff</Link>
             <Button asChild className="hidden md:inline-flex rounded-full bg-foreground text-background hover:bg-foreground/90">
               <a href="#book">Book Now</a>
             </Button>
