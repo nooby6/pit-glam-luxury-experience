@@ -13,6 +13,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
+
 
 import hero from "@/assets/hero-brows.jpg";
 import { browsImg, mirrorImg, closeupImg, cardSizes } from "./pit-glam-images";
@@ -146,6 +149,7 @@ function Nav() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            <Link to="/login" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground mr-2">Staff</Link>
             <Button asChild className="hidden md:inline-flex rounded-full bg-foreground text-background hover:bg-foreground/90">
               <a href="#book">Book Now</a>
             </Button>
@@ -380,6 +384,18 @@ function About() {
 /* -------- Services -------- */
 function Services() {
   const r = useReveal();
+  const [live, setLive] = useState<Record<string, { price: string; time: string }>>({});
+  useEffect(() => {
+    supabase.from("services").select("name, price_kes, duration_min").eq("active", true).then(({ data }) => {
+      if (!data) return;
+      const map: Record<string, { price: string; time: string }> = {};
+      data.forEach((s: any) => {
+        map[s.name.toLowerCase()] = { price: `KSh ${Number(s.price_kes).toLocaleString()}`, time: `${s.duration_min} min` };
+      });
+      setLive(map);
+    });
+  }, []);
+
   return (
     <section id="services" className="relative py-28 md:py-40 bg-secondary/40">
       <div className="mx-auto max-w-7xl px-5">
@@ -424,12 +440,12 @@ function Services() {
               <div className="p-7">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <h3 className="font-display text-2xl leading-tight">{s.name}</h3>
-                  <span className="hairline text-accent shrink-0 pt-1">{s.price}</span>
+                  <span className="hairline text-accent shrink-0 pt-1">{live[s.name.toLowerCase()]?.price ?? s.price}</span>
                 </div>
                 <p className="text-muted-foreground text-sm leading-relaxed mb-6">{s.desc}</p>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" /> {s.time}
+                    <Clock className="h-3.5 w-3.5" /> {live[s.name.toLowerCase()]?.time ?? s.time}
                   </span>
                   <a
                     href="#book"
