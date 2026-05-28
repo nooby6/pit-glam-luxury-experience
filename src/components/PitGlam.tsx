@@ -13,6 +13,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
+
 
 import hero from "@/assets/hero-brows.jpg";
 import { browsImg, mirrorImg, closeupImg, cardSizes } from "./pit-glam-images";
