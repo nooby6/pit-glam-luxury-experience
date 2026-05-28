@@ -439,12 +439,12 @@ function Services() {
               <div className="p-7">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <h3 className="font-display text-2xl leading-tight">{s.name}</h3>
-                  <span className="hairline text-accent shrink-0 pt-1">{s.price}</span>
+                  <span className="hairline text-accent shrink-0 pt-1">{live[s.name.toLowerCase()]?.price ?? s.price}</span>
                 </div>
                 <p className="text-muted-foreground text-sm leading-relaxed mb-6">{s.desc}</p>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" /> {s.time}
+                    <Clock className="h-3.5 w-3.5" /> {live[s.name.toLowerCase()]?.time ?? s.time}
                   </span>
                   <a
                     href="#book"
