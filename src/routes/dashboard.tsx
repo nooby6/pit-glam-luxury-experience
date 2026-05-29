@@ -18,7 +18,43 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, LogOut, CalendarDays, Scissors, Users } from "lucide-react";
+import { Plus, Pencil, Trash2, LogOut, CalendarDays, Scissors, Users, MessageCircle, ShieldCheck } from "lucide-react";
+
+/* ---------- WhatsApp helper ---------- */
+function normalizePhone(raw: string): string | null {
+  const digits = raw.replace(/[^\d+]/g, "");
+  if (!digits) return null;
+  if (digits.startsWith("+")) return digits.slice(1);
+  if (digits.startsWith("254")) return digits;
+  if (digits.startsWith("0")) return "254" + digits.slice(1);
+  if (digits.startsWith("7") || digits.startsWith("1")) return "254" + digits;
+  return digits;
+}
+function buildWhatsAppMessage(opts: {
+  clientName: string; serviceName?: string | null; startAt: string; durationMin: number; priceKes: number; isUpdate: boolean;
+}) {
+  const d = new Date(opts.startAt);
+  const when = d.toLocaleString("en-KE", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
+  const verb = opts.isUpdate ? "updated" : "confirmed";
+  return [
+    `Hi ${opts.clientName} ✨`,
+    ``,
+    `Your Pit Glam appointment is ${verb}:`,
+    `• ${opts.serviceName ?? "Service"}`,
+    `• ${when}`,
+    `• ${opts.durationMin} min · KSh ${opts.priceKes.toLocaleString()}`,
+    ``,
+    `See you soon — Pit Glam Studio, Nairobi.`,
+    `Because your Brows & Lashes Matter 💛`,
+  ].join("\n");
+}
+function openWhatsApp(phone: string, message: string) {
+  const p = normalizePhone(phone);
+  if (!p) return false;
+  const url = `https://wa.me/${p}?text=${encodeURIComponent(message)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+  return true;
+}
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Staff Dashboard — Pit Glam" }] }),
@@ -50,22 +86,9 @@ function DashboardPage() {
   }
 
   if (!isStaff) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-5">
-        <div className="max-w-md text-center space-y-4">
-          <h1 className="font-display text-3xl">Awaiting role assignment</h1>
-          <p className="text-muted-foreground text-sm">
-            Your account <span className="font-medium">{user.email}</span> is signed in but doesn't have staff
-            permissions yet. Ask an admin to promote you, or run the one-time SQL to make this account the first admin.
-          </p>
-          <div className="rounded-lg bg-muted p-3 text-left text-xs font-mono break-all">
-            INSERT INTO public.user_roles (user_id, role) VALUES ('{user.id}', 'admin');
-          </div>
-          <Button variant="outline" onClick={signOut}>Sign out</Button>
-        </div>
-      </div>
-    );
+    return <AwaitingRole />;
   }
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -212,6 +235,28 @@ function BookingsTab() {
                       <div className="text-xs uppercase tracking-wider text-muted-foreground">{b.status}</div>
                     </div>
                     <div className="flex gap-1">
+                      {b.client_phone && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Send WhatsApp reminder"
+                          onClick={() =>
+                            openWhatsApp(
+                              b.client_phone!,
+                              buildWhatsAppMessage({
+                                clientName: b.client_name,
+                                serviceName: svc?.name,
+                                startAt: b.start_at,
+                                durationMin: b.duration_min,
+                                priceKes: b.price_kes,
+                                isUpdate: false,
+                              }),
+                            )
+                          }
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button size="icon" variant="ghost" onClick={() => { setEditing(b); setOpen(true); }}>
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -281,8 +326,30 @@ function BookingDialog({
     const res = editing
       ? await supabase.from("bookings").update(payload).eq("id", editing.id)
       : await supabase.from("bookings").insert({ ...payload, created_by: user!.id });
-    if (res.error) return toast.error(res.error.message);
+    if (res.error) {
+      const msg = /overlap/i.test(res.error.message)
+        ? "⚠️ This employee already has a booking that overlaps this time slot."
+        : res.error.message;
+      return toast.error(msg);
+    }
     toast.success(editing ? "Updated" : "Booking created");
+
+    // WhatsApp reminder
+    if (payload.client_phone) {
+      const svc = services.find((s) => s.id === payload.service_id);
+      const opened = openWhatsApp(
+        payload.client_phone,
+        buildWhatsAppMessage({
+          clientName: payload.client_name,
+          serviceName: svc?.name,
+          startAt: payload.start_at,
+          durationMin: payload.duration_min,
+          priceKes: payload.price_kes,
+          isUpdate: !!editing,
+        }),
+      );
+      if (opened) toast.info("WhatsApp reminder opened — press send.");
+    }
     onSaved();
   };
 
@@ -538,6 +605,82 @@ function TeamTab() {
           ))}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+/* ---------- Awaiting role / first-admin bootstrap ---------- */
+function AwaitingRole() {
+  const { user, signOut, refreshRole } = useAuth();
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [busy, setBusy] = useState(false);
+  const [adminExists, setAdminExists] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { count } = await supabase
+        .from("user_roles")
+        .select("user_id", { count: "exact", head: true })
+        .eq("role", "admin");
+      setAdminExists((count ?? 0) > 0);
+    })();
+  }, []);
+
+  const promote = async () => {
+    if (!email.trim()) return toast.error("Email required");
+    setBusy(true);
+    const { data, error } = await supabase.rpc("promote_first_admin", { _email: email.trim() });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    const res = data as { ok: boolean; error?: string };
+    if (!res.ok) return toast.error(res.error ?? "Could not promote");
+    toast.success("You're now an admin. Refreshing…");
+    await refreshRole();
+    setAdminExists(true);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-5 py-12">
+      <div className="w-full max-w-md">
+        <div className="rounded-3xl border bg-card shadow-soft p-8 space-y-5">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            <h1 className="font-display text-2xl">
+              {adminExists === false ? "Claim admin access" : "Awaiting role assignment"}
+            </h1>
+          </div>
+
+          {adminExists === false ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                No admin exists yet. Enter the email of the account that should become the first admin
+                (this is normally <span className="font-medium">{user?.email}</span>).
+              </p>
+              <div>
+                <Label htmlFor="admin-email">Admin email</Label>
+                <Input
+                  id="admin-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <Button onClick={promote} disabled={busy} className="w-full">
+                {busy ? "Granting…" : "Grant admin role"}
+              </Button>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Your account <span className="font-medium">{user?.email}</span> is signed in but doesn't have
+              staff permissions yet. Ask an admin to promote you from the Team tab.
+            </p>
+          )}
+
+          <Button variant="outline" onClick={signOut} className="w-full">
+            <LogOut className="h-4 w-4 mr-1" /> Sign out
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
