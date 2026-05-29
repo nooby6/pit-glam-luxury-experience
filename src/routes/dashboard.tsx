@@ -235,6 +235,28 @@ function BookingsTab() {
                       <div className="text-xs uppercase tracking-wider text-muted-foreground">{b.status}</div>
                     </div>
                     <div className="flex gap-1">
+                      {b.client_phone && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Send WhatsApp reminder"
+                          onClick={() =>
+                            openWhatsApp(
+                              b.client_phone!,
+                              buildWhatsAppMessage({
+                                clientName: b.client_name,
+                                serviceName: svc?.name,
+                                startAt: b.start_at,
+                                durationMin: b.duration_min,
+                                priceKes: b.price_kes,
+                                isUpdate: false,
+                              }),
+                            )
+                          }
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button size="icon" variant="ghost" onClick={() => { setEditing(b); setOpen(true); }}>
                         <Pencil className="h-4 w-4" />
                       </Button>
