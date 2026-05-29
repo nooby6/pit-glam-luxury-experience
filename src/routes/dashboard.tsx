@@ -50,22 +50,9 @@ function DashboardPage() {
   }
 
   if (!isStaff) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-5">
-        <div className="max-w-md text-center space-y-4">
-          <h1 className="font-display text-3xl">Awaiting role assignment</h1>
-          <p className="text-muted-foreground text-sm">
-            Your account <span className="font-medium">{user.email}</span> is signed in but doesn't have staff
-            permissions yet. Ask an admin to promote you, or run the one-time SQL to make this account the first admin.
-          </p>
-          <div className="rounded-lg bg-muted p-3 text-left text-xs font-mono break-all">
-            INSERT INTO public.user_roles (user_id, role) VALUES ('{user.id}', 'admin');
-          </div>
-          <Button variant="outline" onClick={signOut}>Sign out</Button>
-        </div>
-      </div>
-    );
+    return <AwaitingRole />;
   }
+
 
   return (
     <div className="min-h-screen bg-background">
