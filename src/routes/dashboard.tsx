@@ -18,7 +18,43 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, LogOut, CalendarDays, Scissors, Users } from "lucide-react";
+import { Plus, Pencil, Trash2, LogOut, CalendarDays, Scissors, Users, MessageCircle, ShieldCheck } from "lucide-react";
+
+/* ---------- WhatsApp helper ---------- */
+function normalizePhone(raw: string): string | null {
+  const digits = raw.replace(/[^\d+]/g, "");
+  if (!digits) return null;
+  if (digits.startsWith("+")) return digits.slice(1);
+  if (digits.startsWith("254")) return digits;
+  if (digits.startsWith("0")) return "254" + digits.slice(1);
+  if (digits.startsWith("7") || digits.startsWith("1")) return "254" + digits;
+  return digits;
+}
+function buildWhatsAppMessage(opts: {
+  clientName: string; serviceName?: string | null; startAt: string; durationMin: number; priceKes: number; isUpdate: boolean;
+}) {
+  const d = new Date(opts.startAt);
+  const when = d.toLocaleString("en-KE", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
+  const verb = opts.isUpdate ? "updated" : "confirmed";
+  return [
+    `Hi ${opts.clientName} ✨`,
+    ``,
+    `Your Pit Glam appointment is ${verb}:`,
+    `• ${opts.serviceName ?? "Service"}`,
+    `• ${when}`,
+    `• ${opts.durationMin} min · KSh ${opts.priceKes.toLocaleString()}`,
+    ``,
+    `See you soon — Pit Glam Studio, Nairobi.`,
+    `Because your Brows & Lashes Matter 💛`,
+  ].join("\n");
+}
+function openWhatsApp(phone: string, message: string) {
+  const p = normalizePhone(phone);
+  if (!p) return false;
+  const url = `https://wa.me/${p}?text=${encodeURIComponent(message)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+  return true;
+}
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Staff Dashboard — Pit Glam" }] }),
