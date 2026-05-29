@@ -304,8 +304,30 @@ function BookingDialog({
     const res = editing
       ? await supabase.from("bookings").update(payload).eq("id", editing.id)
       : await supabase.from("bookings").insert({ ...payload, created_by: user!.id });
-    if (res.error) return toast.error(res.error.message);
+    if (res.error) {
+      const msg = /overlap/i.test(res.error.message)
+        ? "⚠️ This employee already has a booking that overlaps this time slot."
+        : res.error.message;
+      return toast.error(msg);
+    }
     toast.success(editing ? "Updated" : "Booking created");
+
+    // WhatsApp reminder
+    if (payload.client_phone) {
+      const svc = services.find((s) => s.id === payload.service_id);
+      const opened = openWhatsApp(
+        payload.client_phone,
+        buildWhatsAppMessage({
+          clientName: payload.client_name,
+          serviceName: svc?.name,
+          startAt: payload.start_at,
+          durationMin: payload.duration_min,
+          priceKes: payload.price_kes,
+          isUpdate: !!editing,
+        }),
+      );
+      if (opened) toast.info("WhatsApp reminder opened — press send.");
+    }
     onSaved();
   };
 
