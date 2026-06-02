@@ -35,17 +35,56 @@ const nav = [
   { label: "Contact", href: "#contact" },
 ];
 
-const services = [
-  { name: "Eyebrow Shaping", desc: "Precision wax & tweeze tailored to your facial architecture.", price: "KSh 1,200", time: "30 min", img: imgBrows, alt: "Client showing freshly sculpted brows with clean, defined arches", caption: "Brow mapping & shaping — tailored to your bone structure" },
-  { name: "Brow Lamination", desc: "Fluffy, fashion-forward brows that stay set for weeks.", price: "KSh 3,500", time: "45 min", img: imgBrows, alt: "Close-up of laminated brows brushed upward for a full, fluffy finish", caption: "Lamination creates a feathered, editorial brow look" },
-  { name: "Brow Tinting", desc: "Custom-blended tint for richer, defined arches.", price: "KSh 1,500", time: "25 min", img: imgBrows, alt: "Richly tinted brows framing the eyes with deep, even pigment", caption: "Custom-blended tint matched to your hair & skin tone" },
-  { name: "Classic Lash Extensions", desc: "One-to-one application for a soft mascara finish.", price: "KSh 3,000", time: "90 min", img: imgLashes, alt: "Client admiring classic lash extensions in a hand mirror", caption: "Classic 1:1 extensions — natural length with a soft curl" },
-  { name: "Hybrid Lash Extensions", desc: "A textured mix of classic and volume — effortless drama.", price: "KSh 4,500", time: "120 min", img: imgLashes, alt: "Hybrid lash set blending classic singles and volume fans", caption: "Hybrid texture — the perfect balance of natural & bold" },
-  { name: "Volume Lash Extensions", desc: "Hand-crafted fans for full, fluttery intensity.", price: "KSh 6,000", time: "150 min", img: imgLashes, alt: "Full volume lash fans creating a dramatic, wide-awake gaze", caption: "Russian-volume fans — up to 600 ultra-fine lashes per eye" },
-  { name: "Lash Lift", desc: "Natural-lash curl that opens the eye for up to 8 weeks.", price: "KSh 3,500", time: "60 min", img: imgLashes, alt: "Lifted natural lashes curled upward, opening the eye shape", caption: "Lash lift & tint — your own lashes, beautifully curled" },
-  { name: "Lash Tint", desc: "Deep, glossy pigment for a wide-awake gaze.", price: "KSh 1,200", time: "25 min", img: imgLashes, alt: "Deeply tinted lashes catching light with a glossy black finish", caption: "Semi-permanent tint — no mascara needed for weeks" },
-  { name: "Bridal Beauty Package", desc: "Lashes, brows & a glow trial for your big day.", price: "KSh 12,000", time: "Custom", img: imgBridal, alt: "Bridal lash close-up — soft, romantic volume for the wedding day", caption: "Bridal trial included — walk down the aisle with confidence" },
-];
+type LiveService = {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  price_kes: number;
+  duration_min: number;
+  sort_order: number;
+};
+
+const SERVICE_IMAGES: Record<string, { img: typeof browsImg; alt: string; caption: string }> = {
+  brows: { img: imgBrows, alt: "Client showing freshly sculpted brows with clean, defined arches", caption: "Brow artistry — tailored to your bone structure" },
+  lashes: { img: imgLashes, alt: "Close-up of lash extensions with a soft, fluttery curl", caption: "Lash artistry — hand-applied for a wide-awake gaze" },
+  bridal: { img: imgBridal, alt: "Bridal beauty close-up — soft, romantic lashes for the wedding day", caption: "Bridal styling — confidence for your big day" },
+};
+
+function imageForService(s: { category: string | null; name: string }) {
+  const key = (s.category ?? "").toLowerCase();
+  if (SERVICE_IMAGES[key]) return SERVICE_IMAGES[key];
+  const n = s.name.toLowerCase();
+  if (n.includes("brow")) return SERVICE_IMAGES.brows;
+  if (n.includes("bridal")) return SERVICE_IMAGES.bridal;
+  return SERVICE_IMAGES.lashes;
+}
+
+function useLiveServices() {
+  const [services, setServices] = useState<LiveService[]>([]);
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      const { data } = await supabase
+        .from("services")
+        .select("id, name, description, category, price_kes, duration_min, sort_order")
+        .eq("active", true)
+        .order("sort_order");
+      if (active && data) setServices(data as LiveService[]);
+    };
+    load();
+    const channel = supabase
+      .channel("services-public")
+      .on("postgres_changes", { event: "*", schema: "public", table: "services" }, () => load())
+      .subscribe();
+    return () => {
+      active = false;
+      supabase.removeChannel(channel);
+    };
+  }, []);
+  return services;
+}
+
 
 const features = [
   { icon: Award, title: "Certified Artists", desc: "Trained in Korean & Russian techniques." },
