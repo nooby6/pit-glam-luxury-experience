@@ -35,17 +35,56 @@ const nav = [
   { label: "Contact", href: "#contact" },
 ];
 
-const services = [
-  { name: "Eyebrow Shaping", desc: "Precision wax & tweeze tailored to your facial architecture.", price: "KSh 1,200", time: "30 min", img: imgBrows, alt: "Client showing freshly sculpted brows with clean, defined arches", caption: "Brow mapping & shaping — tailored to your bone structure" },
-  { name: "Brow Lamination", desc: "Fluffy, fashion-forward brows that stay set for weeks.", price: "KSh 3,500", time: "45 min", img: imgBrows, alt: "Close-up of laminated brows brushed upward for a full, fluffy finish", caption: "Lamination creates a feathered, editorial brow look" },
-  { name: "Brow Tinting", desc: "Custom-blended tint for richer, defined arches.", price: "KSh 1,500", time: "25 min", img: imgBrows, alt: "Richly tinted brows framing the eyes with deep, even pigment", caption: "Custom-blended tint matched to your hair & skin tone" },
-  { name: "Classic Lash Extensions", desc: "One-to-one application for a soft mascara finish.", price: "KSh 3,000", time: "90 min", img: imgLashes, alt: "Client admiring classic lash extensions in a hand mirror", caption: "Classic 1:1 extensions — natural length with a soft curl" },
-  { name: "Hybrid Lash Extensions", desc: "A textured mix of classic and volume — effortless drama.", price: "KSh 4,500", time: "120 min", img: imgLashes, alt: "Hybrid lash set blending classic singles and volume fans", caption: "Hybrid texture — the perfect balance of natural & bold" },
-  { name: "Volume Lash Extensions", desc: "Hand-crafted fans for full, fluttery intensity.", price: "KSh 6,000", time: "150 min", img: imgLashes, alt: "Full volume lash fans creating a dramatic, wide-awake gaze", caption: "Russian-volume fans — up to 600 ultra-fine lashes per eye" },
-  { name: "Lash Lift", desc: "Natural-lash curl that opens the eye for up to 8 weeks.", price: "KSh 3,500", time: "60 min", img: imgLashes, alt: "Lifted natural lashes curled upward, opening the eye shape", caption: "Lash lift & tint — your own lashes, beautifully curled" },
-  { name: "Lash Tint", desc: "Deep, glossy pigment for a wide-awake gaze.", price: "KSh 1,200", time: "25 min", img: imgLashes, alt: "Deeply tinted lashes catching light with a glossy black finish", caption: "Semi-permanent tint — no mascara needed for weeks" },
-  { name: "Bridal Beauty Package", desc: "Lashes, brows & a glow trial for your big day.", price: "KSh 12,000", time: "Custom", img: imgBridal, alt: "Bridal lash close-up — soft, romantic volume for the wedding day", caption: "Bridal trial included — walk down the aisle with confidence" },
-];
+type LiveService = {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  price_kes: number;
+  duration_min: number;
+  sort_order: number;
+};
+
+const SERVICE_IMAGES: Record<string, { img: typeof browsImg; alt: string; caption: string }> = {
+  brows: { img: imgBrows, alt: "Client showing freshly sculpted brows with clean, defined arches", caption: "Brow artistry — tailored to your bone structure" },
+  lashes: { img: imgLashes, alt: "Close-up of lash extensions with a soft, fluttery curl", caption: "Lash artistry — hand-applied for a wide-awake gaze" },
+  bridal: { img: imgBridal, alt: "Bridal beauty close-up — soft, romantic lashes for the wedding day", caption: "Bridal styling — confidence for your big day" },
+};
+
+function imageForService(s: { category: string | null; name: string }) {
+  const key = (s.category ?? "").toLowerCase();
+  if (SERVICE_IMAGES[key]) return SERVICE_IMAGES[key];
+  const n = s.name.toLowerCase();
+  if (n.includes("brow")) return SERVICE_IMAGES.brows;
+  if (n.includes("bridal")) return SERVICE_IMAGES.bridal;
+  return SERVICE_IMAGES.lashes;
+}
+
+function useLiveServices() {
+  const [services, setServices] = useState<LiveService[]>([]);
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      const { data } = await supabase
+        .from("services")
+        .select("id, name, description, category, price_kes, duration_min, sort_order")
+        .eq("active", true)
+        .order("sort_order");
+      if (active && data) setServices(data as LiveService[]);
+    };
+    load();
+    const channel = supabase
+      .channel("services-public")
+      .on("postgres_changes", { event: "*", schema: "public", table: "services" }, () => load())
+      .subscribe();
+    return () => {
+      active = false;
+      supabase.removeChannel(channel);
+    };
+  }, []);
+  return services;
+}
+
 
 const features = [
   { icon: Award, title: "Certified Artists", desc: "Trained in Korean & Russian techniques." },
@@ -384,17 +423,7 @@ function About() {
 /* -------- Services -------- */
 function Services() {
   const r = useReveal();
-  const [live, setLive] = useState<Record<string, { price: string; time: string }>>({});
-  useEffect(() => {
-    supabase.from("services").select("name, price_kes, duration_min").eq("active", true).then(({ data }) => {
-      if (!data) return;
-      const map: Record<string, { price: string; time: string }> = {};
-      data.forEach((s: any) => {
-        map[s.name.toLowerCase()] = { price: `KSh ${Number(s.price_kes).toLocaleString()}`, time: `${s.duration_min} min` };
-      });
-      setLive(map);
-    });
-  }, []);
+  const services = useLiveServices();
 
   return (
     <section id="services" className="relative py-28 md:py-40 bg-secondary/40">
@@ -411,10 +440,15 @@ function Services() {
           </motion.p>
         </div>
 
+        {services.length === 0 ? (
+          <p className="text-center text-muted-foreground py-12">Loading our menu…</p>
+        ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((s, i) => (
+          {services.map((s, i) => {
+            const meta = imageForService(s);
+            return (
             <motion.article
-              key={s.name}
+              key={s.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
@@ -423,29 +457,29 @@ function Services() {
             >
               <div className="aspect-[4/3] overflow-hidden relative">
                 <img
-                  src={s.img.src}
-                  srcSet={s.img.srcSet}
+                  src={meta.img.src}
+                  srcSet={meta.img.srcSet}
                   sizes={cardSizes}
-                  alt={s.alt}
+                  alt={meta.alt}
                   loading="lazy"
                   decoding="async"
-                  width={s.img.width}
-                  height={s.img.height}
+                  width={meta.img.width}
+                  height={meta.img.height}
                   className="h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-110"
                 />
                 <span className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-5 py-4 text-xs text-white/90 hairline opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  {s.caption}
+                  {meta.caption}
                 </span>
               </div>
               <div className="p-7">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <h3 className="font-display text-2xl leading-tight">{s.name}</h3>
-                  <span className="hairline text-accent shrink-0 pt-1">{live[s.name.toLowerCase()]?.price ?? s.price}</span>
+                  <span className="hairline text-accent shrink-0 pt-1">KSh {Number(s.price_kes).toLocaleString()}</span>
                 </div>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-6">{s.desc}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed mb-6">{s.description ?? ""}</p>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" /> {live[s.name.toLowerCase()]?.time ?? s.time}
+                    <Clock className="h-3.5 w-3.5" /> {s.duration_min} min
                   </span>
                   <a
                     href="#book"
@@ -457,12 +491,15 @@ function Services() {
                 </div>
               </div>
             </motion.article>
-          ))}
+            );
+          })}
         </div>
+        )}
       </div>
     </section>
   );
 }
+
 
 /* -------- Before & After slider -------- */
 function BeforeAfter() {
@@ -631,8 +668,10 @@ function Reviews() {
 /* -------- Booking -------- */
 function Booking() {
   const r = useReveal();
+  const services = useLiveServices();
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
     const form = e.currentTarget as HTMLFormElement;
     const data = new FormData(form);
     const name = (data.get("name") ?? "").toString();
@@ -706,7 +745,7 @@ function Booking() {
               </SelectTrigger>
               <SelectContent>
                 {services.map((s) => (
-                  <SelectItem key={s.name} value={s.name}>{s.name}</SelectItem>
+                  <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
