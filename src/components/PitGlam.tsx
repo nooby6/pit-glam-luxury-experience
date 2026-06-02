@@ -9,9 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,11 +62,15 @@ function useLiveServices() {
   useEffect(() => {
     let active = true;
     const load = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("services")
         .select("id, name, description, category, price_kes, duration_min, sort_order")
         .eq("active", true)
         .order("sort_order");
+      if (error) {
+        console.error("Could not load services", error);
+        return;
+      }
       if (active && data) setServices(data as LiveService[]);
     };
     load();
@@ -669,6 +670,7 @@ function Reviews() {
 function Booking() {
   const r = useReveal();
   const services = useLiveServices();
+  const [selectedService, setSelectedService] = useState("");
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -677,10 +679,14 @@ function Booking() {
     const name = (data.get("name") ?? "").toString();
     const phone = (data.get("phone") ?? "").toString();
     const email = (data.get("email") ?? "").toString();
-    const service = (data.get("service") ?? (form.querySelector('[name="service"]') as HTMLInputElement | null)?.value ?? "").toString();
+    const service = (data.get("service") ?? "").toString();
     const date = (data.get("date") ?? "").toString();
     const time = (data.get("time") ?? "").toString();
     const notes = (data.get("notes") ?? "").toString();
+    if (!service) {
+      toast.error("Please choose a service");
+      return;
+    }
     const message = `Hi Pit Glam, I'd like to book an appointment.\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\nService: ${service}\nDate: ${date}\nTime: ${time}\nNotes: ${notes}`;
     const url = `https://wa.me/254722351276?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
@@ -739,16 +745,29 @@ function Booking() {
           </div>
           <div>
             <Label>Service</Label>
-            <Select>
-              <SelectTrigger className="mt-2 rounded-xl h-12 bg-background/60">
-                <SelectValue placeholder="Select a service" />
-              </SelectTrigger>
-              <SelectContent>
-                {services.map((s) => (
-                  <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <input type="hidden" name="service" value={selectedService} />
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              {services.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setSelectedService(s.name)}
+                  className={`rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
+                    selectedService === s.name
+                      ? "border-accent bg-accent/15 text-foreground"
+                      : "border-input bg-background/60 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <span className="block font-medium">{s.name}</span>
+                  <span className="mt-1 block text-xs">KSh {Number(s.price_kes).toLocaleString()} · {s.duration_min} min</span>
+                </button>
+              ))}
+              {services.length === 0 && (
+                <div className="rounded-xl border border-input bg-background/60 px-4 py-3 text-sm text-muted-foreground">
+                  Loading services…
+                </div>
+              )}
+            </div>
           </div>
           <div className="grid sm:grid-cols-2 gap-5">
             <div>

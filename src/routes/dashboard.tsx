@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { format, isSameDay, addDays, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { promoteFirstAdminByEmail } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -159,7 +161,20 @@ function BookingsTab() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [date]);
+  useEffect(() => {
+    load();
+    const channel = supabase
+      .channel(`dashboard-day-${date.toISOString()}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "services" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, () => load())
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    /* eslint-disable-next-line */
+  }, [date]);
 
   const dayBookings = bookings;
 
@@ -419,10 +434,23 @@ function ServicesTab({ isAdmin }: { isAdmin: boolean }) {
   const [open, setOpen] = useState(false);
 
   const load = async () => {
-    const { data } = await supabase.from("services").select("*").order("sort_order");
+    const { data, error } = await supabase.from("services").select("*").order("sort_order");
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     if (data) setServices(data as Service[]);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    const channel = supabase
+      .channel("dashboard-services")
+      .on("postgres_changes", { event: "*", schema: "public", table: "services" }, () => load())
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const remove = async (id: string) => {
     if (!confirm("Delete this service?")) return;
@@ -612,6 +640,7 @@ function TeamTab() {
 /* ---------- Awaiting role / first-admin bootstrap ---------- */
 function AwaitingRole() {
   const { user, signOut, refreshRole } = useAuth();
+  const promoteFirstAdmin = useServerFn(promoteFirstAdminByEmail);
   const [email, setEmail] = useState(user?.email ?? "");
   const [busy, setBusy] = useState(false);
   const [adminExists, setAdminExists] = useState<boolean | null>(null);
@@ -629,14 +658,17 @@ function AwaitingRole() {
   const promote = async () => {
     if (!email.trim()) return toast.error("Email required");
     setBusy(true);
-    const { data, error } = await supabase.rpc("promote_first_admin", { _email: email.trim() });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    const res = data as { ok: boolean; error?: string };
-    if (!res.ok) return toast.error(res.error ?? "Could not promote");
-    toast.success("You're now an admin. Refreshing…");
-    await refreshRole();
-    setAdminExists(true);
+    try {
+      const res = await promoteFirstAdmin({ data: { email: email.trim() } });
+      if (!res.ok) return toast.error(res.error ?? "Could not promote");
+      toast.success("You're now an admin. Refreshing…");
+      await refreshRole();
+      setAdminExists(true);
+    } catch (err: any) {
+      toast.error(err.message || "Could not promote admin");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
