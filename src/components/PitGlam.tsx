@@ -670,6 +670,7 @@ function Reviews() {
 function Booking() {
   const r = useReveal();
   const services = useLiveServices();
+  const [selectedService, setSelectedService] = useState("");
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -678,10 +679,14 @@ function Booking() {
     const name = (data.get("name") ?? "").toString();
     const phone = (data.get("phone") ?? "").toString();
     const email = (data.get("email") ?? "").toString();
-    const service = (data.get("service") ?? (form.querySelector('[name="service"]') as HTMLInputElement | null)?.value ?? "").toString();
+    const service = (data.get("service") ?? "").toString();
     const date = (data.get("date") ?? "").toString();
     const time = (data.get("time") ?? "").toString();
     const notes = (data.get("notes") ?? "").toString();
+    if (!service) {
+      toast.error("Please choose a service");
+      return;
+    }
     const message = `Hi Pit Glam, I'd like to book an appointment.\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\nService: ${service}\nDate: ${date}\nTime: ${time}\nNotes: ${notes}`;
     const url = `https://wa.me/254722351276?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
@@ -740,17 +745,29 @@ function Booking() {
           </div>
           <div>
             <Label>Service</Label>
-            <select
-              name="service"
-              required
-              defaultValue=""
-              className="mt-2 flex h-12 w-full rounded-xl border border-input bg-background/60 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="" disabled>Select a service</option>
+            <input type="hidden" name="service" value={selectedService} />
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {services.map((s) => (
-                <option key={s.id} value={s.name}>{s.name}</option>
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setSelectedService(s.name)}
+                  className={`rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
+                    selectedService === s.name
+                      ? "border-accent bg-accent/15 text-foreground"
+                      : "border-input bg-background/60 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <span className="block font-medium">{s.name}</span>
+                  <span className="mt-1 block text-xs">KSh {Number(s.price_kes).toLocaleString()} · {s.duration_min} min</span>
+                </button>
               ))}
-            </select>
+              {services.length === 0 && (
+                <div className="rounded-xl border border-input bg-background/60 px-4 py-3 text-sm text-muted-foreground">
+                  Loading services…
+                </div>
+              )}
+            </div>
           </div>
           <div className="grid sm:grid-cols-2 gap-5">
             <div>
