@@ -21,6 +21,7 @@ import imgLashes from "@/assets/real-lash-mirror.png";
 import imgBrows from "@/assets/real-brows-lashes.png";
 import imgBridal from "@/assets/real-lash-closeup.png";
 import imgStudio from "@/assets/real-lash-mirror.png";
+import StaffLoginModal from "./StaffLoginModal";
 
 const WHATSAPP = "https://wa.me/254722351276";
 
@@ -149,6 +150,16 @@ function Nav() {
             <Button asChild className="hidden md:inline-flex rounded-full bg-foreground text-background hover:bg-foreground/90">
               <a href="#book">Book Now</a>
             </Button>
+            {/* Staff login button (visible) */}
+            <button
+              onClick={() => {
+                const ev = new CustomEvent("pitglam:open-staff-login");
+                window.dispatchEvent(ev);
+              }}
+              className="inline-flex items-center justify-center rounded-full border px-3 py-2 text-sm font-medium bg-background text-foreground hover:bg-accent/10"
+            >
+              Staff
+            </button>
             <button
               onClick={() => setOpen((v) => !v)}
               className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-full glass"
@@ -183,6 +194,8 @@ function Nav() {
           </motion.div>
         )}
       </div>
+
+      <StaffLoginModal />
     </header>
   );
 }
