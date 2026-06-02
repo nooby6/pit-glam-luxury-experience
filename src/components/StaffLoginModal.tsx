@@ -22,12 +22,17 @@ export default function StaffLoginModal() {
     setLoading(true);
     setError(null);
     try {
-      // Placeholder: call your real staff auth endpoint here.
-      // For now, simulate a network call and close modal on "success" if email contains "@".
-      await new Promise((r) => setTimeout(r, 600));
-      if (!email.includes("@")) throw new Error("Invalid credentials");
+      const res = await fetch("/api/staff/login", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error((data && (data.error || data.message)) || "Authentication failed");
+      }
+      // Successful login: server sets HttpOnly cookie; client can query /api/staff/me if needed.
       setOpen(false);
-      // Optionally dispatch an event for successful login
       window.dispatchEvent(new CustomEvent("pitglam:staff-login-success", { detail: { email } }));
     } catch (err: any) {
       setError(err?.message ?? "Login failed");
