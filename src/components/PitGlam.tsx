@@ -65,11 +65,15 @@ function useLiveServices() {
   useEffect(() => {
     let active = true;
     const load = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("services")
         .select("id, name, description, category, price_kes, duration_min, sort_order")
         .eq("active", true)
         .order("sort_order");
+      if (error) {
+        console.error("Could not load services", error);
+        return;
+      }
       if (active && data) setServices(data as LiveService[]);
     };
     load();
@@ -739,16 +743,17 @@ function Booking() {
           </div>
           <div>
             <Label>Service</Label>
-            <Select>
-              <SelectTrigger className="mt-2 rounded-xl h-12 bg-background/60">
-                <SelectValue placeholder="Select a service" />
-              </SelectTrigger>
-              <SelectContent>
-                {services.map((s) => (
-                  <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <select
+              name="service"
+              required
+              defaultValue=""
+              className="mt-2 flex h-12 w-full rounded-xl border border-input bg-background/60 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="" disabled>Select a service</option>
+              {services.map((s) => (
+                <option key={s.id} value={s.name}>{s.name}</option>
+              ))}
+            </select>
           </div>
           <div className="grid sm:grid-cols-2 gap-5">
             <div>
