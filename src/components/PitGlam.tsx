@@ -669,8 +669,9 @@ function Reviews() {
 function Booking() {
   const r = useReveal();
   const services = useLiveServices();
-
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
     const form = e.currentTarget as HTMLFormElement;
     const data = new FormData(form);
     const name = (data.get("name") ?? "").toString();
