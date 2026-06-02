@@ -159,7 +159,20 @@ function BookingsTab() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [date]);
+  useEffect(() => {
+    load();
+    const channel = supabase
+      .channel(`dashboard-day-${date.toISOString()}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "services" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, () => load())
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    /* eslint-disable-next-line */
+  }, [date]);
 
   const dayBookings = bookings;
 
@@ -419,10 +432,23 @@ function ServicesTab({ isAdmin }: { isAdmin: boolean }) {
   const [open, setOpen] = useState(false);
 
   const load = async () => {
-    const { data } = await supabase.from("services").select("*").order("sort_order");
+    const { data, error } = await supabase.from("services").select("*").order("sort_order");
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     if (data) setServices(data as Service[]);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    const channel = supabase
+      .channel("dashboard-services")
+      .on("postgres_changes", { event: "*", schema: "public", table: "services" }, () => load())
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const remove = async (id: string) => {
     if (!confirm("Delete this service?")) return;
