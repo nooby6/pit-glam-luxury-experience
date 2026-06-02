@@ -150,16 +150,13 @@ function Nav() {
             <Button asChild className="hidden md:inline-flex rounded-full bg-foreground text-background hover:bg-foreground/90">
               <a href="#book">Book Now</a>
             </Button>
-            {/* Staff login button (visible) */}
-            <button
-              onClick={() => {
-                const ev = new CustomEvent("pitglam:open-staff-login");
-                window.dispatchEvent(ev);
-              }}
+            {/* Staff area link */}
+            <a
+              href="/login"
               className="inline-flex items-center justify-center rounded-full border px-3 py-2 text-sm font-medium bg-background text-foreground hover:bg-accent/10"
             >
-              Staff
-            </button>
+              Login
+            </a>
             <button
               onClick={() => setOpen((v) => !v)}
               className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-full glass"

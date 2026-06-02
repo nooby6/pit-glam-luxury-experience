@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function StaffLoginModal() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,6 +36,7 @@ export default function StaffLoginModal() {
       // Successful login: server sets HttpOnly cookie; client can query /api/staff/me if needed.
       setOpen(false);
       window.dispatchEvent(new CustomEvent("pitglam:staff-login-success", { detail: { email } }));
+      navigate({ to: "/staff", replace: true });
     } catch (err: any) {
       setError(err?.message ?? "Login failed");
     } finally {
