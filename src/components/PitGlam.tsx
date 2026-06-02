@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useLiveServices } from "@/hooks/use-live-services";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -379,6 +380,7 @@ function About() {
 /* -------- Services -------- */
 function Services() {
   const r = useReveal();
+  const { services: liveServices, isHydrated } = useLiveServices(services);
   return (
     <section id="services" className="relative py-28 md:py-40 bg-secondary/40">
       <div className="mx-auto max-w-7xl px-5">
@@ -395,7 +397,7 @@ function Services() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((s, i) => (
+          {liveServices.map((s, i) => (
             <motion.article
               key={s.name}
               initial={{ opacity: 0, y: 30 }}
@@ -436,6 +438,7 @@ function Services() {
             </motion.article>
           ))}
         </div>
+        {!isHydrated ? <p className="mt-6 hairline text-muted-foreground">Loading the latest service menu...</p> : null}
       </div>
     </section>
   );
