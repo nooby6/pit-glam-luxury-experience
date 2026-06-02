@@ -4,6 +4,7 @@ import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { logRuntimeError } from "./lib/runtime-error";
 import { normalizeRuntimeError } from "./lib/runtime-error";
+import { verifyPasswordForEmail, ensureDefaultUserFromEnv } from "./lib/staff-store";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -143,9 +144,12 @@ export default {
         const method = request.method.toUpperCase();
 
         const envObj = (env ?? {}) as Record<string, string | undefined>;
-        const STAFF_USER = envObj.STAFF_USER ?? process.env.STAFF_USER;
-        const STAFF_PASS = envObj.STAFF_PASS ?? process.env.STAFF_PASS;
         const STAFF_SECRET = envObj.STAFF_SECRET ?? process.env.STAFF_SECRET ?? "dev-secret";
+
+        // Ensure default user exists (local/dev). This is best-effort and async.
+        try {
+          ensureDefaultUserFromEnv().catch(() => {});
+        } catch {}
 
         if (pathname === "/api/staff/login" && method === "POST") {
           const body = await request.json().catch(() => ({}));
@@ -154,12 +158,13 @@ export default {
             return new Response(JSON.stringify({ error: "Missing credentials" }), { status: 400, headers: { "content-type": "application/json" } });
           }
 
-          // Very small auth check — replace with secure lookup (DB/Identity) in production.
-          if (String(email) !== String(STAFF_USER) || String(password) !== String(STAFF_PASS)) {
+          // Verify against the SQLite-backed staff store. Falls back to env-created default.
+          const user = await verifyPasswordForEmail(String(email), String(password));
+          if (!user) {
             return new Response(JSON.stringify({ error: "Invalid credentials" }), { status: 401, headers: { "content-type": "application/json" } });
           }
 
-          const token = await createSessionToken({ email }, String(STAFF_SECRET), 60 * 60 * 24 * 7);
+          const token = await createSessionToken({ email: user.email }, String(STAFF_SECRET), 60 * 60 * 24 * 7);
           const headers = new Headers({ "content-type": "application/json" });
           // HttpOnly cookie
           headers.append("Set-Cookie", `pitglam_session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${60 * 60 * 24 * 7}`);
