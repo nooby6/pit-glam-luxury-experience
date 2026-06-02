@@ -63,7 +63,10 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
     return response;
   }
 
-  logRuntimeError("server:ssr", consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
+  logRuntimeError(
+    `server:ssr ${response.status}`,
+    consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`),
+  );
   return brandedErrorResponse();
 }
 
@@ -74,7 +77,14 @@ export default {
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error) {
-      logRuntimeError("server:fetch", error);
+      const path = (() => {
+        try {
+          return new URL(request.url).pathname;
+        } catch {
+          return String(request.url ?? "");
+        }
+      })();
+      logRuntimeError(`server:fetch ${request.method} ${path}`, error);
       return brandedErrorResponse();
     }
   },

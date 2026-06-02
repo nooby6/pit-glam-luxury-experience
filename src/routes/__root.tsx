@@ -12,8 +12,6 @@ import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { installClientRuntimeErrorLogging, logRuntimeError } from "@/lib/runtime-error";
 
-installClientRuntimeErrorLogging();
-
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -123,6 +121,15 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  // Install client-side runtime error logging only on the browser.
+  useEffect(() => {
+    try {
+      installClientRuntimeErrorLogging();
+    } catch (err) {
+      // Best effort - ensure client installation failures are logged.
+      logRuntimeError("client:install", err);
+    }
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

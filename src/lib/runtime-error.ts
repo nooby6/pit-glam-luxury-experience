@@ -34,10 +34,20 @@ export function logRuntimeError(scope: string, error: unknown): Error {
   const normalized = normalizeRuntimeError(error);
   const prefix = scope ? `[${scope}]` : "[runtime]";
 
+  // Always try to print a full stack trace when available so server logs
+  // and monitoring systems get as much context as possible.
   if (normalized.stack) {
     console.error(`${prefix} ${normalized.message}\n${normalized.stack}`);
   } else {
     console.error(prefix, normalized);
+  }
+
+  // If the error has a `cause` property, make sure it's surfaced too.
+  try {
+    // @ts-ignore - some errors expose `cause`
+    if (normalized.cause) console.error(`${prefix} cause:`, normalized.cause);
+  } catch {
+    // ignore
   }
 
   return normalized;
