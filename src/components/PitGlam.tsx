@@ -423,17 +423,7 @@ function About() {
 /* -------- Services -------- */
 function Services() {
   const r = useReveal();
-  const [live, setLive] = useState<Record<string, { price: string; time: string }>>({});
-  useEffect(() => {
-    supabase.from("services").select("name, price_kes, duration_min").eq("active", true).then(({ data }) => {
-      if (!data) return;
-      const map: Record<string, { price: string; time: string }> = {};
-      data.forEach((s: any) => {
-        map[s.name.toLowerCase()] = { price: `KSh ${Number(s.price_kes).toLocaleString()}`, time: `${s.duration_min} min` };
-      });
-      setLive(map);
-    });
-  }, []);
+  const services = useLiveServices();
 
   return (
     <section id="services" className="relative py-28 md:py-40 bg-secondary/40">
@@ -450,10 +440,15 @@ function Services() {
           </motion.p>
         </div>
 
+        {services.length === 0 ? (
+          <p className="text-center text-muted-foreground py-12">Loading our menu…</p>
+        ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((s, i) => (
+          {services.map((s, i) => {
+            const meta = imageForService(s);
+            return (
             <motion.article
-              key={s.name}
+              key={s.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
@@ -462,29 +457,29 @@ function Services() {
             >
               <div className="aspect-[4/3] overflow-hidden relative">
                 <img
-                  src={s.img.src}
-                  srcSet={s.img.srcSet}
+                  src={meta.img.src}
+                  srcSet={meta.img.srcSet}
                   sizes={cardSizes}
-                  alt={s.alt}
+                  alt={meta.alt}
                   loading="lazy"
                   decoding="async"
-                  width={s.img.width}
-                  height={s.img.height}
+                  width={meta.img.width}
+                  height={meta.img.height}
                   className="h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-110"
                 />
                 <span className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-5 py-4 text-xs text-white/90 hairline opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  {s.caption}
+                  {meta.caption}
                 </span>
               </div>
               <div className="p-7">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <h3 className="font-display text-2xl leading-tight">{s.name}</h3>
-                  <span className="hairline text-accent shrink-0 pt-1">{live[s.name.toLowerCase()]?.price ?? s.price}</span>
+                  <span className="hairline text-accent shrink-0 pt-1">KSh {Number(s.price_kes).toLocaleString()}</span>
                 </div>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-6">{s.desc}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed mb-6">{s.description ?? ""}</p>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" /> {live[s.name.toLowerCase()]?.time ?? s.time}
+                    <Clock className="h-3.5 w-3.5" /> {s.duration_min} min
                   </span>
                   <a
                     href="#book"
@@ -496,12 +491,15 @@ function Services() {
                 </div>
               </div>
             </motion.article>
-          ))}
+            );
+          })}
         </div>
+        )}
       </div>
     </section>
   );
 }
+
 
 /* -------- Before & After slider -------- */
 function BeforeAfter() {
