@@ -668,7 +668,8 @@ function Reviews() {
 /* -------- Booking -------- */
 function Booking() {
   const r = useReveal();
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const services = useLiveServices();
+
     e.preventDefault();
     const form = e.currentTarget as HTMLFormElement;
     const data = new FormData(form);
