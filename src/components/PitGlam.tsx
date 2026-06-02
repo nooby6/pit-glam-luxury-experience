@@ -745,7 +745,7 @@ function Booking() {
               </SelectTrigger>
               <SelectContent>
                 {services.map((s) => (
-                  <SelectItem key={s.name} value={s.name}>{s.name}</SelectItem>
+                  <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
