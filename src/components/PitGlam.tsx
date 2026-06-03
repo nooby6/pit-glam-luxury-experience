@@ -375,6 +375,7 @@ function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
 /* -------- About -------- */
 function About() {
   const r = useReveal();
+  const { about: a, stats } = useSiteContent();
   return (
     <section id="about" className="relative py-28 md:py-40">
       <div className="mx-auto max-w-7xl px-5 grid lg:grid-cols-2 gap-16 items-center">
@@ -390,31 +391,23 @@ function About() {
               </div>
               <div>
                 <p className="hairline text-muted-foreground">Founded</p>
-                <p className="font-display text-xl">2019 · Nairobi</p>
+                <p className="font-display text-xl">{a.founded_label}</p>
               </div>
             </div>
           </div>
         </motion.div>
 
         <motion.div {...r}>
-          <p className="hairline text-accent mb-6">About Pit Glam</p>
+          <p className="hairline text-accent mb-6">{a.eyebrow}</p>
           <h2 className="font-display text-4xl md:text-6xl leading-[1] mb-8">
-            Confidence is the<br />
-            <em className="italic text-gradient-gold">finest accessory</em>.
+            {a.title_lead}<br />
+            <em className="italic text-gradient-gold">{a.title_accent}</em>.
           </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            Born in the heart of Nairobi, Pit Glam was founded on a simple belief: a perfectly sculpted brow and a lifted lash can change the way you walk into a room. From boardrooms in Kilimani to weddings on the coast, our artists craft tailored beauty for the women shaping modern Kenya.
-          </p>
-          <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
-            Every appointment is a private ritual — soft music, warm tea, and time spent making you feel exactly like yourself, only more so.
-          </p>
+          <p className="text-lg text-muted-foreground leading-relaxed">{a.body_1}</p>
+          <p className="mt-4 text-lg text-muted-foreground leading-relaxed">{a.body_2}</p>
 
           <div className="mt-12 grid grid-cols-3 gap-6">
-            {[
-              { n: 2800, s: "+", l: "Happy Clients" },
-              { n: 6, s: "+", l: "Years Experience" },
-              { n: 15000, s: "+", l: "Treatments" },
-            ].map((s) => (
+            {stats.map((s) => (
               <div key={s.l} className="border-l-2 border-accent pl-4">
                 <p className="font-display text-3xl md:text-4xl">
                   <Counter to={s.n} suffix={s.s} />
@@ -423,6 +416,7 @@ function About() {
               </div>
             ))}
           </div>
+
         </motion.div>
       </div>
     </section>
