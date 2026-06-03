@@ -856,6 +856,8 @@ function Social() {
 /* -------- Location + FAQ -------- */
 function Location() {
   const r = useReveal();
+  const { contact, faqs } = useSiteContent();
+  const mapQuery = encodeURIComponent(`${contact.address_line_1}, ${contact.address_line_2}`);
   return (
     <section id="contact" className="py-28 md:py-40 bg-secondary/40">
       <div className="mx-auto max-w-7xl px-5 grid lg:grid-cols-2 gap-12">
@@ -868,20 +870,20 @@ function Location() {
             <div className="flex items-start gap-4">
               <MapPin className="h-5 w-5 text-accent mt-1 shrink-0" />
               <div>
-                <p className="font-medium">Valley Arcade, Kilimani</p>
-                <p className="text-muted-foreground text-base">Valley Arcade · Kilimani, Nairobi, Kenya</p>
+                <p className="font-medium">{contact.address_line_1}</p>
+                <p className="text-muted-foreground text-base">{contact.address_line_2}</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <Clock className="h-5 w-5 text-accent mt-1 shrink-0" />
               <div>
-                <p className="font-medium">Mon – Sat · 9am – 8pm</p>
+                <p className="font-medium">{contact.hours}</p>
                 <p className="text-muted-foreground text-base">Sunday by appointment only</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <Mail className="h-5 w-5 text-accent mt-1 shrink-0" />
-              <a href="mailto:hello@pitglam.co.ke" className="font-medium">hello@pitglam.co.ke</a>
+              <a href={`mailto:${contact.email}`} className="font-medium">{contact.email}</a>
             </div>
           </div>
 
@@ -904,7 +906,7 @@ function Location() {
         <motion.div {...r} className="rounded-3xl overflow-hidden shadow-luxe h-[640px]">
           <iframe
             title="Pit Glam location"
-            src="https://www.google.com/maps?q=Valley+Arcade,Kilimani,Nairobi,Kenya&output=embed"
+            src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
             width="100%"
             height="100%"
             loading="lazy"
@@ -916,6 +918,7 @@ function Location() {
     </section>
   );
 }
+
 
 /* -------- Newsletter + Footer -------- */
 function Footer() {
