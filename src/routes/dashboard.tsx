@@ -20,7 +20,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, LogOut, CalendarDays, Scissors, Users, MessageCircle, ShieldCheck } from "lucide-react";
+import { Plus, Pencil, Trash2, LogOut, CalendarDays, Scissors, Users, MessageCircle, ShieldCheck, FileText } from "lucide-react";
+import SiteContentTab from "@/components/admin/SiteContentTab";
 
 /* ---------- WhatsApp helper ---------- */
 function normalizePhone(raw: string): string | null {
@@ -114,11 +115,13 @@ function DashboardPage() {
           <TabsList>
             <TabsTrigger value="bookings"><CalendarDays className="h-4 w-4 mr-1" />Bookings</TabsTrigger>
             <TabsTrigger value="services"><Scissors className="h-4 w-4 mr-1" />Services</TabsTrigger>
+            {isAdmin && <TabsTrigger value="site"><FileText className="h-4 w-4 mr-1" />Site Content</TabsTrigger>}
             {isAdmin && <TabsTrigger value="team"><Users className="h-4 w-4 mr-1" />Team</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="bookings" className="mt-6"><BookingsTab /></TabsContent>
           <TabsContent value="services" className="mt-6"><ServicesTab isAdmin={isAdmin} /></TabsContent>
+          {isAdmin && <TabsContent value="site" className="mt-6"><SiteContentTab /></TabsContent>}
           {isAdmin && <TabsContent value="team" className="mt-6"><TeamTab /></TabsContent>}
         </Tabs>
       </main>

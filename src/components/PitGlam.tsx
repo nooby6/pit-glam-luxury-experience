@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ComponentType } from "react";
 import {
   Sparkles, Calendar, Clock, MapPin, Phone, Mail, Instagram,
   Menu, X, MessageCircle, Star, ShieldCheck, Award, HeartHandshake,
@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { useSiteContent } from "@/lib/use-site-content";
 
 
 import hero from "@/assets/hero-brows.jpg";
@@ -22,7 +23,12 @@ const imgBrows = browsImg;
 const imgBridal = closeupImg;
 const imgStudio = mirrorImg;
 
-const WHATSAPP = "https://wa.me/254722351276";
+const FEATURE_ICONS: Record<string, ComponentType<{ className?: string }>> = {
+  Award, Leaf, ShieldCheck, HeartHandshake, Crown, MapPin, Sparkles, Star, Calendar, Clock, Phone, Mail, Instagram, MessageCircle, Quote,
+};
+function featureIcon(name: string) {
+  return FEATURE_ICONS[name] ?? Sparkles;
+}
 
 const nav = [
   { label: "About", href: "#about" },
@@ -237,6 +243,7 @@ function Hero() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], [0, 160]);
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
+  const { hero: h } = useSiteContent();
 
   return (
     <section ref={ref} id="top" className="relative min-h-screen overflow-hidden">
@@ -252,7 +259,6 @@ function Hero() {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
       </motion.div>
 
-      {/* floating accents */}
       <motion.div
         animate={{ y: [0, -14, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
@@ -265,7 +271,7 @@ function Hero() {
             </div>
             <div>
               <p className="text-xs hairline text-muted-foreground">Today</p>
-              <p className="text-sm font-medium">3 slots open</p>
+              <p className="text-sm font-medium">{h.slots_label}</p>
             </div>
           </div>
         </div>
@@ -278,7 +284,7 @@ function Hero() {
       >
         <div className="glass rounded-2xl p-4 shadow-soft flex items-center gap-2">
           <Star className="h-4 w-4 fill-[oklch(0.78_0.085_75)] text-[oklch(0.78_0.085_75)]" />
-          <span className="text-sm font-medium">4.9 · 850+ reviews</span>
+          <span className="text-sm font-medium">{h.rating_label}</span>
         </div>
       </motion.div>
 
@@ -290,7 +296,7 @@ function Hero() {
             transition={{ duration: 0.6 }}
             className="hairline text-muted-foreground mb-6"
           >
-            Nairobi · Kilimani · Est. 2019
+            {h.eyebrow}
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
@@ -298,7 +304,7 @@ function Hero() {
             transition={{ duration: 0.9, delay: 0.1 }}
             className="font-display text-5xl md:text-7xl lg:text-8xl leading-[0.95] text-foreground"
           >
-            Because your <em className="italic text-gradient-gold not-italic md:italic">Brows &amp; Lashes</em> Matter.
+            {h.title_lead} <em className="italic text-gradient-gold not-italic md:italic">{h.title_accent}</em> {h.title_trail}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -306,7 +312,7 @@ function Hero() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="mt-8 max-w-xl text-lg text-muted-foreground"
           >
-            A boutique brows &amp; lashes atelier where Nairobi's tastemakers come to be sculpted, lifted, and quietly transformed.
+            {h.subtitle}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -316,11 +322,11 @@ function Hero() {
           >
             <Button asChild size="lg" className="rounded-full h-14 px-8 bg-foreground text-background hover:bg-foreground/90 shadow-luxe">
               <a href="#book">
-                Book Appointment <ArrowRight className="ml-1 h-4 w-4" />
+                {h.primary_cta} <ArrowRight className="ml-1 h-4 w-4" />
               </a>
             </Button>
             <Button asChild size="lg" variant="outline" className="rounded-full h-14 px-8 border-foreground/20 hover:bg-foreground hover:text-background">
-              <a href="#services">View Services</a>
+              <a href="#services">{h.secondary_cta}</a>
             </Button>
           </motion.div>
         </div>
@@ -337,6 +343,8 @@ function Hero() {
     </section>
   );
 }
+
+
 
 /* -------- Counter -------- */
 function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
@@ -367,6 +375,7 @@ function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
 /* -------- About -------- */
 function About() {
   const r = useReveal();
+  const { about: a, stats } = useSiteContent();
   return (
     <section id="about" className="relative py-28 md:py-40">
       <div className="mx-auto max-w-7xl px-5 grid lg:grid-cols-2 gap-16 items-center">
@@ -382,31 +391,23 @@ function About() {
               </div>
               <div>
                 <p className="hairline text-muted-foreground">Founded</p>
-                <p className="font-display text-xl">2019 · Nairobi</p>
+                <p className="font-display text-xl">{a.founded_label}</p>
               </div>
             </div>
           </div>
         </motion.div>
 
         <motion.div {...r}>
-          <p className="hairline text-accent mb-6">About Pit Glam</p>
+          <p className="hairline text-accent mb-6">{a.eyebrow}</p>
           <h2 className="font-display text-4xl md:text-6xl leading-[1] mb-8">
-            Confidence is the<br />
-            <em className="italic text-gradient-gold">finest accessory</em>.
+            {a.title_lead}<br />
+            <em className="italic text-gradient-gold">{a.title_accent}</em>.
           </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            Born in the heart of Nairobi, Pit Glam was founded on a simple belief: a perfectly sculpted brow and a lifted lash can change the way you walk into a room. From boardrooms in Kilimani to weddings on the coast, our artists craft tailored beauty for the women shaping modern Kenya.
-          </p>
-          <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
-            Every appointment is a private ritual — soft music, warm tea, and time spent making you feel exactly like yourself, only more so.
-          </p>
+          <p className="text-lg text-muted-foreground leading-relaxed">{a.body_1}</p>
+          <p className="mt-4 text-lg text-muted-foreground leading-relaxed">{a.body_2}</p>
 
           <div className="mt-12 grid grid-cols-3 gap-6">
-            {[
-              { n: 2800, s: "+", l: "Happy Clients" },
-              { n: 6, s: "+", l: "Years Experience" },
-              { n: 15000, s: "+", l: "Treatments" },
-            ].map((s) => (
+            {stats.map((s) => (
               <div key={s.l} className="border-l-2 border-accent pl-4">
                 <p className="font-display text-3xl md:text-4xl">
                   <Counter to={s.n} suffix={s.s} />
@@ -415,6 +416,7 @@ function About() {
               </div>
             ))}
           </div>
+
         </motion.div>
       </div>
     </section>
@@ -578,6 +580,7 @@ function BeforeAfter() {
 /* -------- Why Choose -------- */
 function Why() {
   const r = useReveal();
+  const { features } = useSiteContent();
   return (
     <section className="py-28 md:py-40 bg-gradient-noir text-background">
       <div className="mx-auto max-w-7xl px-5">
@@ -588,35 +591,41 @@ function Why() {
           </h2>
         </motion.div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-background/10 rounded-3xl overflow-hidden">
-          {features.map((f, i) => (
-            <motion.div
-              key={f.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.06 }}
-              className="bg-[oklch(0.18_0.012_60)] p-8 md:p-10 hover:bg-[oklch(0.22_0.014_60)] transition-colors"
-            >
-              <div className="h-12 w-12 rounded-full bg-gradient-gold grid place-items-center mb-6">
-                <f.icon className="h-5 w-5 text-foreground" />
-              </div>
-              <h3 className="font-display text-2xl mb-3">{f.title}</h3>
-              <p className="text-background/70">{f.desc}</p>
-            </motion.div>
-          ))}
+          {features.map((f, i) => {
+            const Icon = featureIcon(f.icon);
+            return (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.06 }}
+                className="bg-[oklch(0.18_0.012_60)] p-8 md:p-10 hover:bg-[oklch(0.22_0.014_60)] transition-colors"
+              >
+                <div className="h-12 w-12 rounded-full bg-gradient-gold grid place-items-center mb-6">
+                  <Icon className="h-5 w-5 text-foreground" />
+                </div>
+                <h3 className="font-display text-2xl mb-3">{f.title}</h3>
+                <p className="text-background/70">{f.desc}</p>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
   );
 }
 
+
 /* -------- Reviews -------- */
 function Reviews() {
+  const { reviews } = useSiteContent();
   const [i, setI] = useState(0);
   useEffect(() => {
+    if (reviews.length === 0) return;
     const t = setInterval(() => setI((x) => (x + 1) % reviews.length), 5500);
     return () => clearInterval(t);
-  }, []);
+  }, [reviews.length]);
   const r = useReveal();
   return (
     <section id="reviews" className="py-28 md:py-40">
@@ -628,7 +637,7 @@ function Reviews() {
         <motion.div {...r} className="relative h-[280px] md:h-[220px]">
           {reviews.map((rev, idx) => (
             <motion.div
-              key={rev.name}
+              key={rev.name + idx}
               initial={false}
               animate={{ opacity: i === idx ? 1 : 0, y: i === idx ? 0 : 20 }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
@@ -666,10 +675,13 @@ function Reviews() {
   );
 }
 
+
+
 /* -------- Booking -------- */
 function Booking() {
   const r = useReveal();
   const services = useLiveServices();
+  const { contact } = useSiteContent();
   const [selectedService, setSelectedService] = useState("");
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -688,13 +700,15 @@ function Booking() {
       return;
     }
     const message = `Hi Pit Glam, I'd like to book an appointment.\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\nService: ${service}\nDate: ${date}\nTime: ${time}\nNotes: ${notes}`;
-    const url = `https://wa.me/254722351276?text=${encodeURIComponent(message)}`;
+    const base = contact.whatsapp_url || "https://wa.me/254722351276";
+    const url = `${base}${base.includes("?") ? "&" : "?"}text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
     toast.success("Booking request opened in WhatsApp", {
       description: "You'll be redirected to WhatsApp to complete your request.",
     });
     form.reset();
   }
+  const telHref = `tel:${contact.phone_display.replace(/\s+/g, "")}`;
   return (
     <section id="book" className="py-28 md:py-40 bg-secondary/40">
       <div className="mx-auto max-w-7xl px-5 grid lg:grid-cols-2 gap-16 items-start">
@@ -707,7 +721,7 @@ function Booking() {
             Share a few details and our concierge will confirm your appointment within the hour. Prefer to chat? We're a tap away on WhatsApp.
           </p>
           <div className="space-y-4">
-            <a href={WHATSAPP} target="_blank" rel="noreferrer" className="flex items-center gap-4 glass rounded-2xl p-5 hover:shadow-soft transition-all">
+            <a href={contact.whatsapp_url} target="_blank" rel="noreferrer" className="flex items-center gap-4 glass rounded-2xl p-5 hover:shadow-soft transition-all">
               <div className="h-12 w-12 rounded-full bg-[#25D366] text-white grid place-items-center">
                 <MessageCircle className="h-5 w-5" />
               </div>
@@ -716,17 +730,18 @@ function Booking() {
                 <p className="text-sm text-muted-foreground">Instant replies · 9am–8pm</p>
               </div>
             </a>
-            <a href="tel:+254722351276" className="flex items-center gap-4 glass rounded-2xl p-5 hover:shadow-soft transition-all">
+            <a href={telHref} className="flex items-center gap-4 glass rounded-2xl p-5 hover:shadow-soft transition-all">
               <div className="h-12 w-12 rounded-full bg-foreground text-background grid place-items-center">
                 <Phone className="h-5 w-5" />
               </div>
               <div>
-                <p className="font-medium">+254 722 351276</p>
+                <p className="font-medium">{contact.phone_display}</p>
                 <p className="text-sm text-muted-foreground">Call the studio directly</p>
               </div>
             </a>
           </div>
         </motion.div>
+
 
         <motion.form {...r} onSubmit={onSubmit} className="glass rounded-3xl p-8 md:p-10 shadow-luxe space-y-5">
           <div className="grid sm:grid-cols-2 gap-5">
@@ -841,6 +856,8 @@ function Social() {
 /* -------- Location + FAQ -------- */
 function Location() {
   const r = useReveal();
+  const { contact, faqs } = useSiteContent();
+  const mapQuery = encodeURIComponent(`${contact.address_line_1}, ${contact.address_line_2}`);
   return (
     <section id="contact" className="py-28 md:py-40 bg-secondary/40">
       <div className="mx-auto max-w-7xl px-5 grid lg:grid-cols-2 gap-12">
@@ -853,20 +870,20 @@ function Location() {
             <div className="flex items-start gap-4">
               <MapPin className="h-5 w-5 text-accent mt-1 shrink-0" />
               <div>
-                <p className="font-medium">Valley Arcade, Kilimani</p>
-                <p className="text-muted-foreground text-base">Valley Arcade · Kilimani, Nairobi, Kenya</p>
+                <p className="font-medium">{contact.address_line_1}</p>
+                <p className="text-muted-foreground text-base">{contact.address_line_2}</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <Clock className="h-5 w-5 text-accent mt-1 shrink-0" />
               <div>
-                <p className="font-medium">Mon – Sat · 9am – 8pm</p>
+                <p className="font-medium">{contact.hours}</p>
                 <p className="text-muted-foreground text-base">Sunday by appointment only</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <Mail className="h-5 w-5 text-accent mt-1 shrink-0" />
-              <a href="mailto:hello@pitglam.co.ke" className="font-medium">hello@pitglam.co.ke</a>
+              <a href={`mailto:${contact.email}`} className="font-medium">{contact.email}</a>
             </div>
           </div>
 
@@ -889,7 +906,7 @@ function Location() {
         <motion.div {...r} className="rounded-3xl overflow-hidden shadow-luxe h-[640px]">
           <iframe
             title="Pit Glam location"
-            src="https://www.google.com/maps?q=Valley+Arcade,Kilimani,Nairobi,Kenya&output=embed"
+            src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
             width="100%"
             height="100%"
             loading="lazy"
@@ -902,8 +919,10 @@ function Location() {
   );
 }
 
+
 /* -------- Newsletter + Footer -------- */
 function Footer() {
+  const { contact } = useSiteContent();
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     toast.success("You're on the list", { description: "Welcome to the Pit Glam circle." });
@@ -941,12 +960,12 @@ function Footer() {
           <div>
             <p className="hairline text-background/60 mb-4">Contact</p>
             <ul className="space-y-2 text-background/80">
-              <li>Valley Arcade, Kilimani</li>
-              <li>Nairobi, Kenya</li>
-              <li>+254 722 351276</li>
+              <li>{contact.address_line_1}</li>
+              <li>{contact.address_line_2}</li>
+              <li>{contact.phone_display}</li>
               <li className="flex gap-3 pt-2">
-                <a href="https://instagram.com" aria-label="Instagram" className="h-9 w-9 grid place-items-center rounded-full bg-background/10 hover:bg-accent hover:text-foreground transition-colors"><Instagram className="h-4 w-4" /></a>
-                <a href={WHATSAPP} aria-label="WhatsApp" className="h-9 w-9 grid place-items-center rounded-full bg-background/10 hover:bg-accent hover:text-foreground transition-colors"><MessageCircle className="h-4 w-4" /></a>
+                <a href={contact.instagram_url} aria-label="Instagram" className="h-9 w-9 grid place-items-center rounded-full bg-background/10 hover:bg-accent hover:text-foreground transition-colors"><Instagram className="h-4 w-4" /></a>
+                <a href={contact.whatsapp_url} aria-label="WhatsApp" className="h-9 w-9 grid place-items-center rounded-full bg-background/10 hover:bg-accent hover:text-foreground transition-colors"><MessageCircle className="h-4 w-4" /></a>
               </li>
             </ul>
           </div>
@@ -961,11 +980,12 @@ function Footer() {
   );
 }
 
-/* -------- Floating WhatsApp -------- */
 function FloatingWA() {
+  const { contact } = useSiteContent();
   return (
     <motion.a
-      href={WHATSAPP}
+      href={contact.whatsapp_url}
+
       target="_blank"
       rel="noreferrer"
       initial={{ scale: 0, opacity: 0 }}

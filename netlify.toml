@@ -1,3 +1,10 @@
 [build]
-command = "npm run build"
-publish = "dist/client"
+  command = "npm run build"
+  publish = "dist/client"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# TanStack Start SSR is handled by @netlify/vite-plugin-tanstack-start,
+# which emits a Netlify Function and routing rules at build time.
+# No manual redirects are needed — the plugin wires SPA fallback for you.
