@@ -922,6 +922,7 @@ function Location() {
 
 /* -------- Newsletter + Footer -------- */
 function Footer() {
+  const { contact } = useSiteContent();
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     toast.success("You're on the list", { description: "Welcome to the Pit Glam circle." });
@@ -959,12 +960,12 @@ function Footer() {
           <div>
             <p className="hairline text-background/60 mb-4">Contact</p>
             <ul className="space-y-2 text-background/80">
-              <li>Valley Arcade, Kilimani</li>
-              <li>Nairobi, Kenya</li>
-              <li>+254 722 351276</li>
+              <li>{contact.address_line_1}</li>
+              <li>{contact.address_line_2}</li>
+              <li>{contact.phone_display}</li>
               <li className="flex gap-3 pt-2">
-                <a href="https://instagram.com" aria-label="Instagram" className="h-9 w-9 grid place-items-center rounded-full bg-background/10 hover:bg-accent hover:text-foreground transition-colors"><Instagram className="h-4 w-4" /></a>
-                <a href={WHATSAPP} aria-label="WhatsApp" className="h-9 w-9 grid place-items-center rounded-full bg-background/10 hover:bg-accent hover:text-foreground transition-colors"><MessageCircle className="h-4 w-4" /></a>
+                <a href={contact.instagram_url} aria-label="Instagram" className="h-9 w-9 grid place-items-center rounded-full bg-background/10 hover:bg-accent hover:text-foreground transition-colors"><Instagram className="h-4 w-4" /></a>
+                <a href={contact.whatsapp_url} aria-label="WhatsApp" className="h-9 w-9 grid place-items-center rounded-full bg-background/10 hover:bg-accent hover:text-foreground transition-colors"><MessageCircle className="h-4 w-4" /></a>
               </li>
             </ul>
           </div>
@@ -979,11 +980,12 @@ function Footer() {
   );
 }
 
-/* -------- Floating WhatsApp -------- */
 function FloatingWA() {
+  const { contact } = useSiteContent();
   return (
     <motion.a
-      href={WHATSAPP}
+      href={contact.whatsapp_url}
+
       target="_blank"
       rel="noreferrer"
       initial={{ scale: 0, opacity: 0 }}
