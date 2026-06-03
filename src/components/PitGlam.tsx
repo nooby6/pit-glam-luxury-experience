@@ -681,6 +681,7 @@ function Reviews() {
 function Booking() {
   const r = useReveal();
   const services = useLiveServices();
+  const { contact } = useSiteContent();
   const [selectedService, setSelectedService] = useState("");
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -699,13 +700,15 @@ function Booking() {
       return;
     }
     const message = `Hi Pit Glam, I'd like to book an appointment.\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\nService: ${service}\nDate: ${date}\nTime: ${time}\nNotes: ${notes}`;
-    const url = `https://wa.me/254722351276?text=${encodeURIComponent(message)}`;
+    const base = contact.whatsapp_url || "https://wa.me/254722351276";
+    const url = `${base}${base.includes("?") ? "&" : "?"}text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
     toast.success("Booking request opened in WhatsApp", {
       description: "You'll be redirected to WhatsApp to complete your request.",
     });
     form.reset();
   }
+  const telHref = `tel:${contact.phone_display.replace(/\s+/g, "")}`;
   return (
     <section id="book" className="py-28 md:py-40 bg-secondary/40">
       <div className="mx-auto max-w-7xl px-5 grid lg:grid-cols-2 gap-16 items-start">
@@ -718,7 +721,7 @@ function Booking() {
             Share a few details and our concierge will confirm your appointment within the hour. Prefer to chat? We're a tap away on WhatsApp.
           </p>
           <div className="space-y-4">
-            <a href={WHATSAPP} target="_blank" rel="noreferrer" className="flex items-center gap-4 glass rounded-2xl p-5 hover:shadow-soft transition-all">
+            <a href={contact.whatsapp_url} target="_blank" rel="noreferrer" className="flex items-center gap-4 glass rounded-2xl p-5 hover:shadow-soft transition-all">
               <div className="h-12 w-12 rounded-full bg-[#25D366] text-white grid place-items-center">
                 <MessageCircle className="h-5 w-5" />
               </div>
@@ -727,17 +730,18 @@ function Booking() {
                 <p className="text-sm text-muted-foreground">Instant replies · 9am–8pm</p>
               </div>
             </a>
-            <a href="tel:+254722351276" className="flex items-center gap-4 glass rounded-2xl p-5 hover:shadow-soft transition-all">
+            <a href={telHref} className="flex items-center gap-4 glass rounded-2xl p-5 hover:shadow-soft transition-all">
               <div className="h-12 w-12 rounded-full bg-foreground text-background grid place-items-center">
                 <Phone className="h-5 w-5" />
               </div>
               <div>
-                <p className="font-medium">+254 722 351276</p>
+                <p className="font-medium">{contact.phone_display}</p>
                 <p className="text-sm text-muted-foreground">Call the studio directly</p>
               </div>
             </a>
           </div>
         </motion.div>
+
 
         <motion.form {...r} onSubmit={onSubmit} className="glass rounded-3xl p-8 md:p-10 shadow-luxe space-y-5">
           <div className="grid sm:grid-cols-2 gap-5">
