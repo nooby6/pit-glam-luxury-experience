@@ -20,7 +20,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, LogOut, CalendarDays, Scissors, Users, MessageCircle, ShieldCheck } from "lucide-react";
+import { Plus, Pencil, Trash2, LogOut, CalendarDays, Scissors, Users, MessageCircle, ShieldCheck, FileText } from "lucide-react";
+import SiteContentTab from "@/components/admin/SiteContentTab";
 
 /* ---------- WhatsApp helper ---------- */
 function normalizePhone(raw: string): string | null {
