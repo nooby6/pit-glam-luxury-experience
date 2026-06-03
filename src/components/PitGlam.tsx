@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ComponentType } from "react";
 import {
   Sparkles, Calendar, Clock, MapPin, Phone, Mail, Instagram,
   Menu, X, MessageCircle, Star, ShieldCheck, Award, HeartHandshake,
@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { useSiteContent } from "@/lib/use-site-content";
 
 
 import hero from "@/assets/hero-brows.jpg";
@@ -22,7 +23,12 @@ const imgBrows = browsImg;
 const imgBridal = closeupImg;
 const imgStudio = mirrorImg;
 
-const WHATSAPP = "https://wa.me/254722351276";
+const FEATURE_ICONS: Record<string, ComponentType<{ className?: string }>> = {
+  Award, Leaf, ShieldCheck, HeartHandshake, Crown, MapPin, Sparkles, Star, Calendar, Clock, Phone, Mail, Instagram, MessageCircle, Quote,
+};
+function featureIcon(name: string) {
+  return FEATURE_ICONS[name] ?? Sparkles;
+}
 
 const nav = [
   { label: "About", href: "#about" },
