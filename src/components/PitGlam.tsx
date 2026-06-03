@@ -619,11 +619,13 @@ function Why() {
 
 /* -------- Reviews -------- */
 function Reviews() {
+  const { reviews } = useSiteContent();
   const [i, setI] = useState(0);
   useEffect(() => {
+    if (reviews.length === 0) return;
     const t = setInterval(() => setI((x) => (x + 1) % reviews.length), 5500);
     return () => clearInterval(t);
-  }, []);
+  }, [reviews.length]);
   const r = useReveal();
   return (
     <section id="reviews" className="py-28 md:py-40">
@@ -635,7 +637,7 @@ function Reviews() {
         <motion.div {...r} className="relative h-[280px] md:h-[220px]">
           {reviews.map((rev, idx) => (
             <motion.div
-              key={rev.name}
+              key={rev.name + idx}
               initial={false}
               animate={{ opacity: i === idx ? 1 : 0, y: i === idx ? 0 : 20 }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
@@ -672,6 +674,8 @@ function Reviews() {
     </section>
   );
 }
+
+
 
 /* -------- Booking -------- */
 function Booking() {
