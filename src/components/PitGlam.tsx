@@ -243,6 +243,7 @@ function Hero() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], [0, 160]);
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
+  const { hero: h } = useSiteContent();
 
   return (
     <section ref={ref} id="top" className="relative min-h-screen overflow-hidden">
@@ -258,7 +259,6 @@ function Hero() {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
       </motion.div>
 
-      {/* floating accents */}
       <motion.div
         animate={{ y: [0, -14, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
@@ -271,7 +271,7 @@ function Hero() {
             </div>
             <div>
               <p className="text-xs hairline text-muted-foreground">Today</p>
-              <p className="text-sm font-medium">3 slots open</p>
+              <p className="text-sm font-medium">{h.slots_label}</p>
             </div>
           </div>
         </div>
@@ -284,7 +284,7 @@ function Hero() {
       >
         <div className="glass rounded-2xl p-4 shadow-soft flex items-center gap-2">
           <Star className="h-4 w-4 fill-[oklch(0.78_0.085_75)] text-[oklch(0.78_0.085_75)]" />
-          <span className="text-sm font-medium">4.9 · 850+ reviews</span>
+          <span className="text-sm font-medium">{h.rating_label}</span>
         </div>
       </motion.div>
 
@@ -296,7 +296,7 @@ function Hero() {
             transition={{ duration: 0.6 }}
             className="hairline text-muted-foreground mb-6"
           >
-            Nairobi · Kilimani · Est. 2019
+            {h.eyebrow}
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
@@ -304,7 +304,7 @@ function Hero() {
             transition={{ duration: 0.9, delay: 0.1 }}
             className="font-display text-5xl md:text-7xl lg:text-8xl leading-[0.95] text-foreground"
           >
-            Because your <em className="italic text-gradient-gold not-italic md:italic">Brows &amp; Lashes</em> Matter.
+            {h.title_lead} <em className="italic text-gradient-gold not-italic md:italic">{h.title_accent}</em> {h.title_trail}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -312,7 +312,7 @@ function Hero() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="mt-8 max-w-xl text-lg text-muted-foreground"
           >
-            A boutique brows &amp; lashes atelier where Nairobi's tastemakers come to be sculpted, lifted, and quietly transformed.
+            {h.subtitle}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -322,11 +322,11 @@ function Hero() {
           >
             <Button asChild size="lg" className="rounded-full h-14 px-8 bg-foreground text-background hover:bg-foreground/90 shadow-luxe">
               <a href="#book">
-                Book Appointment <ArrowRight className="ml-1 h-4 w-4" />
+                {h.primary_cta} <ArrowRight className="ml-1 h-4 w-4" />
               </a>
             </Button>
             <Button asChild size="lg" variant="outline" className="rounded-full h-14 px-8 border-foreground/20 hover:bg-foreground hover:text-background">
-              <a href="#services">View Services</a>
+              <a href="#services">{h.secondary_cta}</a>
             </Button>
           </motion.div>
         </div>
@@ -343,6 +343,8 @@ function Hero() {
     </section>
   );
 }
+
+
 
 /* -------- Counter -------- */
 function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
