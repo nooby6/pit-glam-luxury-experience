@@ -580,6 +580,7 @@ function BeforeAfter() {
 /* -------- Why Choose -------- */
 function Why() {
   const r = useReveal();
+  const { features } = useSiteContent();
   return (
     <section className="py-28 md:py-40 bg-gradient-noir text-background">
       <div className="mx-auto max-w-7xl px-5">
@@ -590,27 +591,31 @@ function Why() {
           </h2>
         </motion.div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-background/10 rounded-3xl overflow-hidden">
-          {features.map((f, i) => (
-            <motion.div
-              key={f.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.06 }}
-              className="bg-[oklch(0.18_0.012_60)] p-8 md:p-10 hover:bg-[oklch(0.22_0.014_60)] transition-colors"
-            >
-              <div className="h-12 w-12 rounded-full bg-gradient-gold grid place-items-center mb-6">
-                <f.icon className="h-5 w-5 text-foreground" />
-              </div>
-              <h3 className="font-display text-2xl mb-3">{f.title}</h3>
-              <p className="text-background/70">{f.desc}</p>
-            </motion.div>
-          ))}
+          {features.map((f, i) => {
+            const Icon = featureIcon(f.icon);
+            return (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.06 }}
+                className="bg-[oklch(0.18_0.012_60)] p-8 md:p-10 hover:bg-[oklch(0.22_0.014_60)] transition-colors"
+              >
+                <div className="h-12 w-12 rounded-full bg-gradient-gold grid place-items-center mb-6">
+                  <Icon className="h-5 w-5 text-foreground" />
+                </div>
+                <h3 className="font-display text-2xl mb-3">{f.title}</h3>
+                <p className="text-background/70">{f.desc}</p>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
   );
 }
+
 
 /* -------- Reviews -------- */
 function Reviews() {
