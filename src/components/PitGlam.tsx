@@ -54,13 +54,22 @@ const SERVICE_IMAGES: Record<string, { img: typeof browsImg; alt: string; captio
   bridal: { img: imgBridal, alt: "Bridal beauty close-up — soft, romantic lashes for the wedding day", caption: "Bridal styling — confidence for your big day" },
 };
 
-function imageForService(s: { category: string | null; name: string }) {
+function imageForService(s: { category: string | null; name: string }, serviceImages: Record<string, string | undefined> = {}) {
   const key = (s.category ?? "").toLowerCase();
+  const override = serviceImages[key] ?? serviceImages.default;
+  if (override && (SERVICE_IMAGES[key] || serviceImages.default)) {
+    const base = SERVICE_IMAGES[key] ?? SERVICE_IMAGES.lashes;
+    return { ...base, img: { src: override, srcSet: "", width: 1200, height: 900 } };
+  }
   if (SERVICE_IMAGES[key]) return SERVICE_IMAGES[key];
   const n = s.name.toLowerCase();
-  if (n.includes("brow")) return SERVICE_IMAGES.brows;
-  if (n.includes("bridal")) return SERVICE_IMAGES.bridal;
-  return SERVICE_IMAGES.lashes;
+  const inferred = n.includes("brow") ? "brows" : n.includes("bridal") ? "bridal" : "lashes";
+  const inferredOverride = serviceImages[inferred] ?? serviceImages.default;
+  if (inferredOverride) {
+    const base = SERVICE_IMAGES[inferred];
+    return { ...base, img: { src: inferredOverride, srcSet: "", width: 1200, height: 900 } };
+  }
+  return SERVICE_IMAGES[inferred];
 }
 
 function useLiveServices() {
@@ -244,12 +253,13 @@ function Hero() {
   const y = useTransform(scrollYProgress, [0, 1], [0, 160]);
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
   const { hero: h } = useSiteContent();
+  const heroImage = h.image_url || hero;
 
   return (
     <section ref={ref} id="top" className="relative min-h-screen overflow-hidden">
       <motion.div style={{ y, scale }} className="absolute inset-0">
         <img
-          src={hero}
+          src={heroImage}
           alt="Close-up of luxurious brows and lashes"
           className="h-full w-full object-cover"
           width={1536}
@@ -265,10 +275,14 @@ function Hero() {
         className="absolute right-[12%] top-[28%] hidden md:block"
       >
         <div className="glass rounded-2xl p-4 shadow-soft">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center">
-              <Sparkles className="h-5 w-5 text-foreground" />
-            </div>
+            <div className="flex items-center gap-3">
+              {h.slots_image_url ? (
+                <img src={h.slots_image_url} alt="Available appointment slots" className="h-10 w-10 rounded-full object-cover" />
+              ) : (
+                <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center">
+                  <Sparkles className="h-5 w-5 text-foreground" />
+                </div>
+              )}
             <div>
               <p className="text-xs hairline text-muted-foreground">Today</p>
               <p className="text-sm font-medium">{h.slots_label}</p>
