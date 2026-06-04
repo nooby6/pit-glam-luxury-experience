@@ -11,6 +11,8 @@ export type HeroContent = {
   secondary_cta: string;
   slots_label: string;
   rating_label: string;
+  image_url?: string;
+  slots_image_url?: string;
 };
 export type AboutContent = {
   eyebrow: string;
@@ -22,8 +24,20 @@ export type AboutContent = {
 };
 export type StatItem = { n: number; s: string; l: string };
 export type FeatureItem = { icon: string; title: string; desc: string };
-export type ReviewItem = { name: string; role: string; quote: string };
+export type ReviewItem = { name: string; role: string; quote: string; image_url?: string };
 export type FaqItem = { q: string; a: string };
+export type GalleryImage = { url: string; alt: string };
+export type GalleryContent = {
+  before_image_url?: string;
+  after_image_url?: string;
+  images: GalleryImage[];
+};
+export type ServiceImagesContent = {
+  brows?: string;
+  lashes?: string;
+  bridal?: string;
+  default?: string;
+};
 export type ContactContent = {
   whatsapp_url: string;
   phone_display: string;
@@ -41,6 +55,8 @@ export type SiteContent = {
   stats: StatItem[];
   features: FeatureItem[];
   reviews: ReviewItem[];
+  gallery: GalleryContent;
+  service_images: ServiceImagesContent;
   faqs: FaqItem[];
   contact: ContactContent;
 };
@@ -75,6 +91,8 @@ export const DEFAULT_CONTENT: SiteContent = {
   ],
   features: [],
   reviews: [],
+  gallery: { images: [] },
+  service_images: {},
   faqs: [],
   contact: {
     whatsapp_url: "https://wa.me/254722351276",
@@ -105,7 +123,7 @@ export function useSiteContent(): SiteContent {
     };
     load();
     const channel = supabase
-      .channel("site-settings-public")
+      .channel(`site-settings-public-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "site_settings" },
