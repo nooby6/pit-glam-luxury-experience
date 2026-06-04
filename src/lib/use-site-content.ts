@@ -11,6 +11,8 @@ export type HeroContent = {
   secondary_cta: string;
   slots_label: string;
   rating_label: string;
+  image_url?: string;
+  slots_image_url?: string;
 };
 export type AboutContent = {
   eyebrow: string;
@@ -22,8 +24,20 @@ export type AboutContent = {
 };
 export type StatItem = { n: number; s: string; l: string };
 export type FeatureItem = { icon: string; title: string; desc: string };
-export type ReviewItem = { name: string; role: string; quote: string };
+export type ReviewItem = { name: string; role: string; quote: string; image_url?: string };
 export type FaqItem = { q: string; a: string };
+export type GalleryImage = { url: string; alt: string };
+export type GalleryContent = {
+  before_image_url?: string;
+  after_image_url?: string;
+  images: GalleryImage[];
+};
+export type ServiceImagesContent = {
+  brows?: string;
+  lashes?: string;
+  bridal?: string;
+  default?: string;
+};
 export type ContactContent = {
   whatsapp_url: string;
   phone_display: string;
@@ -41,6 +55,8 @@ export type SiteContent = {
   stats: StatItem[];
   features: FeatureItem[];
   reviews: ReviewItem[];
+  gallery: GalleryContent;
+  service_images: ServiceImagesContent;
   faqs: FaqItem[];
   contact: ContactContent;
 };
@@ -75,6 +91,8 @@ export const DEFAULT_CONTENT: SiteContent = {
   ],
   features: [],
   reviews: [],
+  gallery: { images: [] },
+  service_images: {},
   faqs: [],
   contact: {
     whatsapp_url: "https://wa.me/254722351276",
@@ -87,6 +105,29 @@ export const DEFAULT_CONTENT: SiteContent = {
     hours: "Mon–Sat · 9am – 7pm",
   },
 };
+
+const STORAGE_IMAGE_PREFIX = "storage:site-images/";
+
+async function resolveStorageReference(value: unknown): Promise<unknown> {
+  if (typeof value === "string" && value.startsWith(STORAGE_IMAGE_PREFIX)) {
+    const path = value.slice(STORAGE_IMAGE_PREFIX.length);
+    const { data, error } = await supabase.storage.from("site-images").createSignedUrl(path, 60 * 60 * 24 * 7);
+    return error || !data?.signedUrl ? value : data.signedUrl;
+  }
+
+  if (Array.isArray(value)) {
+    return Promise.all(value.map((item) => resolveStorageReference(item)));
+  }
+
+  if (value && typeof value === "object") {
+    const entries = await Promise.all(
+      Object.entries(value).map(async ([key, item]) => [key, await resolveStorageReference(item)]),
+    );
+    return Object.fromEntries(entries);
+  }
+
+  return value;
+}
 
 export function useSiteContent(): SiteContent {
   const [content, setContent] = useState<SiteContent>(DEFAULT_CONTENT);
@@ -101,11 +142,12 @@ export function useSiteContent(): SiteContent {
       for (const row of data) {
         (next as unknown as Record<string, unknown>)[row.key] = row.value as unknown;
       }
-      setContent(next);
+      const resolved = (await resolveStorageReference(next)) as SiteContent;
+      setContent(resolved);
     };
     load();
     const channel = supabase
-      .channel("site-settings-public")
+      .channel(`site-settings-public-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "site_settings" },

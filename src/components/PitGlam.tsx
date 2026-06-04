@@ -54,13 +54,22 @@ const SERVICE_IMAGES: Record<string, { img: typeof browsImg; alt: string; captio
   bridal: { img: imgBridal, alt: "Bridal beauty close-up — soft, romantic lashes for the wedding day", caption: "Bridal styling — confidence for your big day" },
 };
 
-function imageForService(s: { category: string | null; name: string }) {
+function imageForService(s: { category: string | null; name: string }, serviceImages: Record<string, string | undefined> = {}) {
   const key = (s.category ?? "").toLowerCase();
+  const override = serviceImages[key] ?? serviceImages.default;
+  if (override && (SERVICE_IMAGES[key] || serviceImages.default)) {
+    const base = SERVICE_IMAGES[key] ?? SERVICE_IMAGES.lashes;
+    return { ...base, img: { src: override, srcSet: "", width: 1200, height: 900 } };
+  }
   if (SERVICE_IMAGES[key]) return SERVICE_IMAGES[key];
   const n = s.name.toLowerCase();
-  if (n.includes("brow")) return SERVICE_IMAGES.brows;
-  if (n.includes("bridal")) return SERVICE_IMAGES.bridal;
-  return SERVICE_IMAGES.lashes;
+  const inferred = n.includes("brow") ? "brows" : n.includes("bridal") ? "bridal" : "lashes";
+  const inferredOverride = serviceImages[inferred] ?? serviceImages.default;
+  if (inferredOverride) {
+    const base = SERVICE_IMAGES[inferred];
+    return { ...base, img: { src: inferredOverride, srcSet: "", width: 1200, height: 900 } };
+  }
+  return SERVICE_IMAGES[inferred];
 }
 
 function useLiveServices() {
@@ -81,7 +90,7 @@ function useLiveServices() {
     };
     load();
     const channel = supabase
-      .channel("services-public")
+      .channel(`services-public-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "services" }, () => load())
       .subscribe();
     return () => {
@@ -244,12 +253,13 @@ function Hero() {
   const y = useTransform(scrollYProgress, [0, 1], [0, 160]);
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
   const { hero: h } = useSiteContent();
+  const heroImage = h.image_url || hero;
 
   return (
     <section ref={ref} id="top" className="relative min-h-screen overflow-hidden">
       <motion.div style={{ y, scale }} className="absolute inset-0">
         <img
-          src={hero}
+          src={heroImage}
           alt="Close-up of luxurious brows and lashes"
           className="h-full w-full object-cover"
           width={1536}
@@ -265,10 +275,14 @@ function Hero() {
         className="absolute right-[12%] top-[28%] hidden md:block"
       >
         <div className="glass rounded-2xl p-4 shadow-soft">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center">
-              <Sparkles className="h-5 w-5 text-foreground" />
-            </div>
+            <div className="flex items-center gap-3">
+              {h.slots_image_url ? (
+                <img src={h.slots_image_url} alt="Available appointment slots" className="h-10 w-10 rounded-full object-cover" />
+              ) : (
+                <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center">
+                  <Sparkles className="h-5 w-5 text-foreground" />
+                </div>
+              )}
             <div>
               <p className="text-xs hairline text-muted-foreground">Today</p>
               <p className="text-sm font-medium">{h.slots_label}</p>
@@ -427,6 +441,7 @@ function About() {
 function Services() {
   const r = useReveal();
   const services = useLiveServices();
+  const { service_images: serviceImages } = useSiteContent();
 
   return (
     <section id="services" className="relative py-28 md:py-40 bg-secondary/40">
@@ -448,7 +463,7 @@ function Services() {
         ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((s, i) => {
-            const meta = imageForService(s);
+            const meta = imageForService(s, serviceImages);
             return (
             <motion.article
               key={s.id}
@@ -508,6 +523,21 @@ function Services() {
 function BeforeAfter() {
   const [pos, setPos] = useState(50);
   const r = useReveal();
+  const { gallery } = useSiteContent();
+  const beforeImage = gallery.before_image_url || imgBrows.src;
+  const afterImage = gallery.after_image_url || imgLashes.src;
+  const galleryTiles = gallery.images.length > 0
+    ? gallery.images
+    : [
+      { url: imgLashes.src, alt: "Classic lash extensions reflecting in a vanity mirror" },
+      { url: imgBrows.src, alt: "Freshly shaped and tinted brows framing the eyes" },
+      { url: imgBridal.src, alt: "Close-up of soft bridal volume lashes for a wedding look" },
+      { url: imgStudio.src, alt: "Lash technician workspace with mirror and premium tools" },
+      { url: imgBrows.src, alt: "Detailed brow mapping showing symmetrical arch design" },
+      { url: imgLashes.src, alt: "Hybrid lash set creating a textured, wide-awake gaze" },
+      { url: imgBridal.src, alt: "Bridal lash close-up — romantic, feathered volume" },
+      { url: imgStudio.src, alt: "Client viewing her lash transformation in the studio mirror" },
+    ];
   return (
     <section id="gallery" className="py-28 md:py-40">
       <div className="mx-auto max-w-7xl px-5">
@@ -520,9 +550,9 @@ function BeforeAfter() {
 
         <motion.div {...r} className="relative mx-auto max-w-4xl rounded-3xl overflow-hidden shadow-luxe select-none">
           <div className="relative aspect-[16/10]">
-            <img src={imgBrows.src} srcSet={imgBrows.srcSet} sizes="(min-width: 768px) 800px, 100vw" alt="Before: natural brows and lashes before any treatment" width={imgBrows.width} height={imgBrows.height} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
+            <img src={beforeImage} srcSet={gallery.before_image_url ? undefined : imgBrows.srcSet} sizes="(min-width: 768px) 800px, 100vw" alt="Before: natural brows and lashes before any treatment" width={imgBrows.width} height={imgBrows.height} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
             <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-              <img src={imgLashes.src} srcSet={imgLashes.srcSet} sizes="(min-width: 768px) 800px, 100vw" alt="After: lush lashes and defined brows following Pit Glam treatments" width={imgLashes.width} height={imgLashes.height} className="h-full w-full object-cover" loading="lazy" decoding="async" />
+              <img src={afterImage} srcSet={gallery.after_image_url ? undefined : imgLashes.srcSet} sizes="(min-width: 768px) 800px, 100vw" alt="After: lush lashes and defined brows following Pit Glam treatments" width={imgLashes.width} height={imgLashes.height} className="h-full w-full object-cover" loading="lazy" decoding="async" />
             </div>
             <div
               className="absolute top-0 bottom-0 w-0.5 bg-accent shadow-gold"
@@ -550,16 +580,7 @@ function BeforeAfter() {
 
         {/* Masonry */}
         <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { src: imgLashes, alt: "Classic lash extensions reflecting in a vanity mirror" },
-            { src: imgBrows, alt: "Freshly shaped and tinted brows framing the eyes" },
-            { src: imgBridal, alt: "Close-up of soft bridal volume lashes for a wedding look" },
-            { src: imgStudio, alt: "Lash technician workspace with mirror and premium tools" },
-            { src: imgBrows, alt: "Detailed brow mapping showing symmetrical arch design" },
-            { src: imgLashes, alt: "Hybrid lash set creating a textured, wide-awake gaze" },
-            { src: imgBridal, alt: "Bridal lash close-up — romantic, feathered volume" },
-            { src: imgStudio, alt: "Client viewing her lash transformation in the studio mirror" },
-          ].map((item, i) => (
+          {galleryTiles.map((item, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 30 }}
@@ -568,7 +589,7 @@ function BeforeAfter() {
               transition={{ duration: 0.6, delay: (i % 4) * 0.06 }}
               className={`overflow-hidden rounded-2xl shadow-soft ${i % 3 === 0 ? "row-span-2 aspect-[3/4]" : "aspect-square"}`}
             >
-              <img src={item.src.src} srcSet={item.src.srcSet} sizes={cardSizes} alt={item.alt} loading="lazy" decoding="async" width={item.src.width} height={item.src.height} className="h-full w-full object-cover hover:scale-110 transition-transform duration-1000" />
+              <img src={item.url} sizes={cardSizes} alt={item.alt} loading="lazy" decoding="async" width={900} height={900} className="h-full w-full object-cover hover:scale-110 transition-transform duration-1000" />
             </motion.div>
           ))}
         </div>
@@ -649,9 +670,13 @@ function Reviews() {
                 "{rev.quote}"
               </p>
               <div className="mt-8 flex items-center justify-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center font-display text-sm">
-                  {rev.name[0]}
-                </div>
+                {rev.image_url ? (
+                  <img src={rev.image_url} alt={rev.name} className="h-10 w-10 rounded-full object-cover" />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center font-display text-sm">
+                    {rev.name[0]}
+                  </div>
+                )}
                 <div className="text-left">
                   <p className="font-medium">{rev.name}</p>
                   <p className="text-xs text-muted-foreground">{rev.role}</p>
