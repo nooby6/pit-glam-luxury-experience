@@ -90,7 +90,7 @@ function useLiveServices() {
     };
     load();
     const channel = supabase
-      .channel("services-public")
+      .channel(`services-public-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "services" }, () => load())
       .subscribe();
     return () => {
