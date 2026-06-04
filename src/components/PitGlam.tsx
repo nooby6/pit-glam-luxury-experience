@@ -670,9 +670,13 @@ function Reviews() {
                 "{rev.quote}"
               </p>
               <div className="mt-8 flex items-center justify-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center font-display text-sm">
-                  {rev.name[0]}
-                </div>
+                {rev.image_url ? (
+                  <img src={rev.image_url} alt={rev.name} className="h-10 w-10 rounded-full object-cover" />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center font-display text-sm">
+                    {rev.name[0]}
+                  </div>
+                )}
                 <div className="text-left">
                   <p className="font-medium">{rev.name}</p>
                   <p className="text-xs text-muted-foreground">{rev.role}</p>
