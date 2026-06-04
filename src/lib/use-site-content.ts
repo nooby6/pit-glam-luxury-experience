@@ -106,6 +106,29 @@ export const DEFAULT_CONTENT: SiteContent = {
   },
 };
 
+const STORAGE_IMAGE_PREFIX = "storage:site-images/";
+
+async function resolveStorageReference(value: unknown): Promise<unknown> {
+  if (typeof value === "string" && value.startsWith(STORAGE_IMAGE_PREFIX)) {
+    const path = value.slice(STORAGE_IMAGE_PREFIX.length);
+    const { data, error } = await supabase.storage.from("site-images").createSignedUrl(path, 60 * 60 * 24 * 7);
+    return error || !data?.signedUrl ? value : data.signedUrl;
+  }
+
+  if (Array.isArray(value)) {
+    return Promise.all(value.map((item) => resolveStorageReference(item)));
+  }
+
+  if (value && typeof value === "object") {
+    const entries = await Promise.all(
+      Object.entries(value).map(async ([key, item]) => [key, await resolveStorageReference(item)]),
+    );
+    return Object.fromEntries(entries);
+  }
+
+  return value;
+}
+
 export function useSiteContent(): SiteContent {
   const [content, setContent] = useState<SiteContent>(DEFAULT_CONTENT);
 
@@ -119,7 +142,8 @@ export function useSiteContent(): SiteContent {
       for (const row of data) {
         (next as unknown as Record<string, unknown>)[row.key] = row.value as unknown;
       }
-      setContent(next);
+      const resolved = (await resolveStorageReference(next)) as SiteContent;
+      setContent(resolved);
     };
     load();
     const channel = supabase
