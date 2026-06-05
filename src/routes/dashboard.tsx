@@ -5,6 +5,7 @@ import { format, isSameDay, addDays, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { promoteFirstAdminByEmail } from "@/lib/admin.functions";
+import { listUsers, createUser, deleteUser, setUserRole } from "@/lib/users.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -579,66 +580,187 @@ function ServiceDialog({ editing, onSaved }: { editing: Service | null; onSaved:
 }
 
 /* ---------- Team ---------- */
+type ManagedUser = {
+  id: string;
+  email: string;
+  display_name: string | null;
+  role: "admin" | "employee" | null;
+  created_at: string;
+  last_sign_in_at: string | null;
+};
+
 function TeamTab() {
-  const [members, setMembers] = useState<StaffMember[]>([]);
+  const { user } = useAuth();
+  const listUsersFn = useServerFn(listUsers);
+  const createUserFn = useServerFn(createUser);
+  const deleteUserFn = useServerFn(deleteUser);
+  const setUserRoleFn = useServerFn(setUserRole);
+
+  const [members, setMembers] = useState<ManagedUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ email: "", password: "", display_name: "", role: "employee" as "admin" | "employee" | "_none" });
+  const [creating, setCreating] = useState(false);
+
   const load = async () => {
-    const [p, r] = await Promise.all([
-      supabase.from("profiles").select("id, display_name").order("created_at"),
-      supabase.from("user_roles").select("user_id, role"),
-    ]);
-    if (p.data && r.data) {
-      const roleMap = new Map<string, "admin" | "employee">();
-      (r.data as any[]).forEach((x) => {
-        const cur = roleMap.get(x.user_id);
-        if (x.role === "admin" || !cur) roleMap.set(x.user_id, x.role);
-      });
-      setMembers((p.data as any[]).map((u) => ({
-        id: u.id, display_name: u.display_name, role: roleMap.get(u.id) ?? null,
-      })));
+    setLoading(true);
+    try {
+      const res = await listUsersFn();
+      setMembers(res.users);
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setLoading(false);
     }
   };
-  useEffect(() => { load(); }, []);
-
-  const setRole = async (uid: string, role: "admin" | "employee" | null) => {
-    await supabase.from("user_roles").delete().eq("user_id", uid);
-    if (role) {
-      const { error } = await supabase.from("user_roles").insert({ user_id: uid, role });
-      if (error) return toast.error(error.message);
-    }
-    toast.success("Role updated");
+  useEffect(() => {
     load();
+    const ch = supabase
+      .channel(`team-${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onSetRole = async (uid: string, role: "admin" | "employee" | null) => {
+    setBusyId(uid);
+    try {
+      await setUserRoleFn({ data: { user_id: uid, role } });
+      toast.success("Role updated");
+      load();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const onDelete = async (m: ManagedUser) => {
+    if (!confirm(`Permanently delete ${m.email}? This cannot be undone.`)) return;
+    setBusyId(m.id);
+    try {
+      await deleteUserFn({ data: { user_id: m.id } });
+      toast.success("User deleted");
+      load();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const onCreate = async () => {
+    if (!form.email.trim() || !form.password.trim()) {
+      return toast.error("Email and password required");
+    }
+    setCreating(true);
+    try {
+      await createUserFn({
+        data: {
+          email: form.email.trim(),
+          password: form.password,
+          display_name: form.display_name.trim() || undefined,
+          role: form.role === "_none" ? null : form.role,
+        },
+      });
+      toast.success("User created");
+      setOpen(false);
+      setForm({ email: "", password: "", display_name: "", role: "employee" });
+      load();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
     <div>
-      <h2 className="font-display text-2xl mb-1">Team & roles</h2>
-      <p className="text-sm text-muted-foreground mb-4">
-        Anyone who signs up at <span className="font-mono">/login</span> appears here. Promote them to employee or admin.
-      </p>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="font-display text-2xl">Users & roles</h2>
+          <p className="text-sm text-muted-foreground">
+            Create accounts, assign admin or employee roles, or delete users.
+          </p>
+        </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button><Plus className="h-4 w-4 mr-1" />Add user</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Create user</DialogTitle></DialogHeader>
+            <div className="grid gap-3">
+              <div><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+              <div><Label>Password</Label><Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="At least 8 characters" /></div>
+              <div><Label>Display name</Label><Input value={form.display_name} onChange={(e) => setForm({ ...form, display_name: e.target.value })} /></div>
+              <div>
+                <Label>Role</Label>
+                <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v as typeof form.role })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none">No access</SelectItem>
+                    <SelectItem value="employee">Employee</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={onCreate} disabled={creating}>{creating ? "Creating…" : "Create user"}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
       <Card>
         <CardContent className="p-0 divide-y">
-          {members.length === 0 && <div className="p-6 text-muted-foreground">No members yet.</div>}
-          {members.map((m) => (
-            <div key={m.id} className="flex flex-wrap items-center gap-4 p-4">
-              <div className="flex-1 min-w-[180px]">
-                <div className="font-medium">{m.display_name || "(no name)"}</div>
-                <div className="text-xs font-mono text-muted-foreground break-all">{m.id}</div>
+          {loading && <div className="p-6 text-muted-foreground">Loading…</div>}
+          {!loading && members.length === 0 && <div className="p-6 text-muted-foreground">No users yet.</div>}
+          {members.map((m) => {
+            const isSelf = m.id === user?.id;
+            return (
+              <div key={m.id} className="flex flex-wrap items-center gap-4 p-4">
+                <div className="flex-1 min-w-[220px]">
+                  <div className="font-medium">{m.display_name || m.email}</div>
+                  <div className="text-xs text-muted-foreground">{m.email}{isSelf && " · you"}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Joined {format(new Date(m.created_at), "d MMM yyyy")}
+                    {m.last_sign_in_at && ` · Last seen ${format(new Date(m.last_sign_in_at), "d MMM yyyy")}`}
+                  </div>
+                </div>
+                <Select
+                  value={m.role ?? "_none"}
+                  onValueChange={(v) => onSetRole(m.id, v === "_none" ? null : (v as "admin" | "employee"))}
+                  disabled={busyId === m.id}
+                >
+                  <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none">No access</SelectItem>
+                    <SelectItem value="employee">Employee</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onDelete(m)}
+                  disabled={busyId === m.id || isSelf}
+                  title={isSelf ? "You can't delete yourself" : "Delete user"}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
-              <Select value={m.role ?? "_none"} onValueChange={(v) => setRole(m.id, v === "_none" ? null : (v as any))}>
-                <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_none">No access</SelectItem>
-                  <SelectItem value="employee">Employee</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
+            );
+          })}
         </CardContent>
       </Card>
     </div>
   );
 }
+
 
 /* ---------- Awaiting role / first-admin bootstrap ---------- */
 function AwaitingRole() {
