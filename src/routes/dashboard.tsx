@@ -5,6 +5,7 @@ import { format, isSameDay, addDays, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { promoteFirstAdminByEmail } from "@/lib/admin.functions";
+import { listUsers, createUser, deleteUser, setUserRole } from "@/lib/users.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
