@@ -116,17 +116,21 @@ function DashboardPage() {
 
       <main className="mx-auto max-w-7xl px-5 py-8">
         <Tabs defaultValue="bookings">
-          <TabsList>
-            <TabsTrigger value="bookings"><CalendarDays className="h-4 w-4 mr-1" />Bookings</TabsTrigger>
+          <TabsList className="flex-wrap h-auto">
+            <TabsTrigger value="bookings"><CalendarDays className="h-4 w-4 mr-1" />Day view</TabsTrigger>
+            {isAdmin && <TabsTrigger value="all-bookings"><ListChecks className="h-4 w-4 mr-1" />All bookings</TabsTrigger>}
             <TabsTrigger value="services"><Scissors className="h-4 w-4 mr-1" />Services</TabsTrigger>
             {isAdmin && <TabsTrigger value="site"><FileText className="h-4 w-4 mr-1" />Site Content</TabsTrigger>}
             {isAdmin && <TabsTrigger value="team"><Users className="h-4 w-4 mr-1" />Team</TabsTrigger>}
+            <TabsTrigger value="account"><KeyRound className="h-4 w-4 mr-1" />Account</TabsTrigger>
           </TabsList>
 
           <TabsContent value="bookings" className="mt-6"><BookingsTab /></TabsContent>
+          {isAdmin && <TabsContent value="all-bookings" className="mt-6"><AllBookingsTab /></TabsContent>}
           <TabsContent value="services" className="mt-6"><ServicesTab isAdmin={isAdmin} /></TabsContent>
           {isAdmin && <TabsContent value="site" className="mt-6"><SiteContentTab /></TabsContent>}
           {isAdmin && <TabsContent value="team" className="mt-6"><TeamTab /></TabsContent>}
+          <TabsContent value="account" className="mt-6"><AccountTab /></TabsContent>
         </Tabs>
       </main>
     </div>
