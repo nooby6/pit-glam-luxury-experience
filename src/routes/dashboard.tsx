@@ -81,7 +81,7 @@ type Booking = {
 type StaffMember = { id: string; display_name: string | null; role: "admin" | "employee" | null };
 
 function DashboardPage() {
-  const { user, isAdmin, isStaff, loading, signOut } = useAuth();
+  const { user, isAdmin, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
