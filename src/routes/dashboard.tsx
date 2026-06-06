@@ -258,13 +258,38 @@ function BookingsTab() {
                     </div>
                     <div className="text-right">
                       <div className="font-medium">KSh {b.price_kes.toLocaleString()}</div>
-                      <div className="text-xs uppercase tracking-wider text-muted-foreground">{b.status}</div>
+                      <Select
+                        value={b.status}
+                        onValueChange={async (v) => {
+                          const { error } = await supabase.from("bookings").update({ status: v }).eq("id", b.id);
+                          if (error) toast.error(error.message);
+                          else toast.success(`Marked ${v.replace("_", " ")}`);
+                        }}
+                      >
+                        <SelectTrigger className="h-7 w-32 text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {STATUS_OPTIONS.map((s) => (
+                            <SelectItem key={s} value={s}>{s.replace("_", " ")}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="flex gap-1">
-                      {b.client_phone && (
+                      {b.status !== "cancelled" && (
                         <Button
                           size="icon"
                           variant="ghost"
+                          title="Cancel booking"
+                          onClick={async () => {
+                            if (!confirm("Cancel this booking?")) return;
+                            const { error } = await supabase.from("bookings").update({ status: "cancelled" }).eq("id", b.id);
+                            if (error) toast.error(error.message);
+                            else toast.success("Cancelled");
+                          }}
+                        >
+                          <Ban className="h-4 w-4" />
+                        </Button>
+                      )}
                           title="Send WhatsApp reminder"
                           onClick={() =>
                             openWhatsApp(
