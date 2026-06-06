@@ -81,7 +81,7 @@ type Booking = {
 type StaffMember = { id: string; display_name: string | null; role: "admin" | "employee" | null };
 
 function DashboardPage() {
-  const { user, isAdmin, isStaff, loading, signOut } = useAuth();
+  const { user, isAdmin, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -92,9 +92,8 @@ function DashboardPage() {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
   }
 
-  if (!isStaff) {
-    return <AwaitingRole />;
-  }
+  // All authenticated users can manage bookings, see the calendar, and change their password.
+  // Admin-only tabs (Team, Site Content, All Bookings) remain gated below.
 
 
   return (
