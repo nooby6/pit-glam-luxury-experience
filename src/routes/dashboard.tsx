@@ -877,3 +877,168 @@ function AwaitingRole() {
     </div>
   );
 }
+
+/* ---------- All bookings (admin) ---------- */
+function AllBookingsTab() {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [statusFilter, setStatusFilter] = useState<BookingStatus | "all">("all");
+  const [loading, setLoading] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    const [b, s] = await Promise.all([
+      supabase.from("bookings").select("*").order("start_at", { ascending: false }).limit(500),
+      supabase.from("services").select("id, name"),
+    ]);
+    if (b.data) setBookings(b.data as Booking[]);
+    if (s.data) setServices(s.data as Service[]);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    load();
+    const ch = supabase
+      .channel(`all-bookings-${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
+
+  const updateStatus = async (id: string, status: BookingStatus) => {
+    const { error } = await supabase.from("bookings").update({ status }).eq("id", id);
+    if (error) toast.error(error.message);
+    else toast.success(`Marked ${status.replace("_", " ")}`);
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm("Permanently delete this booking?")) return;
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else toast.success("Deleted");
+  };
+
+  const filtered = bookings.filter((b) => statusFilter === "all" || b.status === statusFilter);
+  const counts = STATUS_OPTIONS.reduce<Record<string, number>>((acc, s) => {
+    acc[s] = bookings.filter((b) => b.status === s).length;
+    return acc;
+  }, {});
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
+        <div>
+          <h2 className="font-display text-2xl">All bookings</h2>
+          <p className="text-sm text-muted-foreground">
+            {bookings.length} total · live syncing across all devices.
+          </p>
+        </div>
+        <div className="w-56">
+          <Label className="text-xs">Filter by status</Label>
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as BookingStatus | "all")}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All ({bookings.length})</SelectItem>
+              {STATUS_OPTIONS.map((s) => (
+                <SelectItem key={s} value={s}>{s.replace("_", " ")} ({counts[s] ?? 0})</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <Card>
+        <CardContent className="p-0 divide-y">
+          {loading && <div className="p-6 text-muted-foreground">Loading…</div>}
+          {!loading && filtered.length === 0 && (
+            <div className="p-6 text-muted-foreground">No bookings match this filter.</div>
+          )}
+          {filtered.map((b) => {
+            const svc = services.find((s) => s.id === b.service_id);
+            return (
+              <div key={b.id} className="flex flex-wrap items-center gap-4 p-4">
+                <div className="min-w-[120px]">
+                  <div className="font-medium">{format(new Date(b.start_at), "d MMM yyyy")}</div>
+                  <div className="text-xs text-muted-foreground">{format(new Date(b.start_at), "HH:mm")} · {b.duration_min} min</div>
+                </div>
+                <div className="flex-1 min-w-[200px]">
+                  <div className="font-medium">{b.client_name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {svc?.name ?? "—"}{b.client_phone ? ` · ${b.client_phone}` : ""}
+                  </div>
+                </div>
+                <div className="text-sm font-medium min-w-[100px] text-right">KSh {b.price_kes.toLocaleString()}</div>
+                <Select value={b.status} onValueChange={(v) => updateStatus(b.id, v as BookingStatus)}>
+                  <SelectTrigger className="w-36 text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {STATUS_OPTIONS.map((s) => (
+                      <SelectItem key={s} value={s}>{s.replace("_", " ")}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {b.status !== "cancelled" && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Cancel"
+                    onClick={() => {
+                      if (confirm("Cancel this booking?")) updateStatus(b.id, "cancelled");
+                    }}
+                  >
+                    <Ban className="h-4 w-4" />
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" title="Delete" onClick={() => remove(b.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/* ---------- Account (password change for any signed-in user) ---------- */
+function AccountTab() {
+  const { user } = useAuth();
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    if (password.length < 8) return toast.error("Password must be at least 8 characters.");
+    if (password !== confirm) return toast.error("Passwords don't match.");
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Password updated.");
+    setPassword(""); setConfirm("");
+  };
+
+  return (
+    <div className="max-w-md">
+      <h2 className="font-display text-2xl mb-1">Account</h2>
+      <p className="text-sm text-muted-foreground mb-6">
+        Signed in as <span className="font-medium">{user?.email}</span>. Change your password below — this is self-service and not managed by admins.
+      </p>
+      <Card>
+        <CardContent className="p-6 space-y-4">
+          <div>
+            <Label htmlFor="new-pw">New password</Label>
+            <Input id="new-pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" />
+          </div>
+          <div>
+            <Label htmlFor="confirm-pw">Confirm new password</Label>
+            <Input id="confirm-pw" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+          </div>
+          <Button onClick={submit} disabled={busy} className="w-full">
+            <KeyRound className="h-4 w-4 mr-1" />{busy ? "Updating…" : "Update password"}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
