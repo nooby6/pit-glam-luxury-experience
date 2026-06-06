@@ -290,6 +290,10 @@ function BookingsTab() {
                           <Ban className="h-4 w-4" />
                         </Button>
                       )}
+                      {b.client_phone && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
                           title="Send WhatsApp reminder"
                           onClick={() =>
                             openWhatsApp(
