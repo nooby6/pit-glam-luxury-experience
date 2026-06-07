@@ -197,20 +197,20 @@ function Nav() {
               <a
                 key={n.href}
                 href={n.href}
-                className="text-sm text-foreground/80 hover:text-foreground transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-accent after:transition-all hover:after:w-full"
+                className="text-sm text-foreground hover:text-foreground transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-accent after:transition-all hover:after:w-full"
               >
                 {n.label}
               </a>
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <Link to="/login" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground mr-2">Staff</Link>
+            <Link to="/login" className="inline-flex text-sm text-foreground hover:text-foreground mr-2">Staff</Link>
             <Button asChild className="hidden md:inline-flex rounded-full bg-foreground text-background hover:bg-foreground/90">
               <a href="#book">Book Now</a>
             </Button>
             <button
               onClick={() => setOpen((v) => !v)}
-              className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-full glass"
+              className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-full glass text-foreground"
               aria-label="Toggle menu"
             >
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -230,11 +230,18 @@ function Nav() {
                   key={n.href}
                   onClick={() => setOpen(false)}
                   href={n.href}
-                  className="text-lg font-display"
+                  className="text-lg font-display text-foreground"
                 >
                   {n.label}
                 </a>
               ))}
+              <Link
+                to="/login"
+                onClick={() => setOpen(false)}
+                className="text-lg font-display text-foreground"
+              >
+                Staff Sign In
+              </Link>
               <Button asChild className="mt-2 rounded-full bg-foreground text-background">
                 <a href="#book" onClick={() => setOpen(false)}>Book Appointment</a>
               </Button>
